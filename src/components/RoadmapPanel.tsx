@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Bus, Leaf, Navigation } from 'lucide-react';
+import { Leaf, Navigation } from 'lucide-react';
 
 export const RoadmapPanel: React.FC = () => {
   return (
@@ -12,21 +12,21 @@ export const RoadmapPanel: React.FC = () => {
       </h3>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Transportation Optimization */}
-        <div className="bg-stadium-green-dark/40 border border-card-border/60 rounded-lg p-4 relative overflow-hidden transition-all hover:border-accent-gold/30">
+        {/* Drone Egress Guidance */}
+        <div className="bg-stadium-green-dark/40 border border-card-border/60 rounded-lg p-4 relative overflow-hidden transition-all hover:border-accent-gold/30 animate-fade-in">
           <div className="absolute top-0 right-0 p-3 opacity-15">
-            <Bus className="w-12 h-12 text-accent-gold" />
+            <Navigation className="w-12 h-12 text-accent-gold" />
           </div>
           
           <div className="flex items-center space-x-2 mb-2">
             <span className="w-1.5 h-1.5 bg-accent-gold rounded-full animate-pulse"></span>
             <h4 className="font-scoreboard text-xs font-bold text-accent-gold tracking-wider">
-              Transportation Optimization (Phase 2)
+              Predictive Drone Egress Guidance (Phase 2)
             </h4>
           </div>
           
           <p className="text-xs text-foreground/85 leading-relaxed font-sans">
-            Integrating real-time gate ticketing exits and external transit system sensors to forecast shuttle and light-rail bottlenecks 15 minutes before the final whistle. By running predictive time-series models on egress flow rates, PITCH will dynamically coordinate transit timetables with municipal operations and dispatch digital signage to route fans toward lower-congestion transit bays. This prevents overcrowding at transit platforms during peak egress windows.
+            Deploying a networked fleet of autonomous LED wayfinding drones to Gates A-F immediately following the final whistle. Drones will hover above congested exit pathways and coordinate dynamic directional arrows and audio broadcasts, visually shifting crowds toward municipal transit bays recommended by PITCH&apos;s real-time occupancy engine.
           </p>
         </div>
 

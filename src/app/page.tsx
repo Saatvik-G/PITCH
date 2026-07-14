@@ -19,6 +19,18 @@ const IncidentSummarizer = dynamic(
   }
 );
 
+const TransitOptimization = dynamic(
+  () => import('@/components/TransitOptimization').then(mod => mod.TransitOptimization),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="panel-glass rounded-xl p-5 h-[380px] animate-pulse flex flex-col items-center justify-center text-xs text-foreground/70 font-scoreboard tracking-widest border border-card-border/50">
+        LOADING TRANSIT & EGRESS OPTIMIZATION...
+      </div>
+    )
+  }
+);
+
 const RoadmapPanel = dynamic(
   () => import('@/components/RoadmapPanel').then(mod => mod.RoadmapPanel),
   {
@@ -127,7 +139,12 @@ export default function Home() {
 
         </div>
 
-        {/* ROW 3: Tier 2 Integration Roadmap */}
+        {/* ROW 3: Transit & Egress Optimization */}
+        <div className="mt-2 h-fit">
+          <TransitOptimization />
+        </div>
+
+        {/* ROW 4: Tier 2 Integration Roadmap */}
         <div className="mt-2 h-fit">
           <RoadmapPanel />
         </div>
