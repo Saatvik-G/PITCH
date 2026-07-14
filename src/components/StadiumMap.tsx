@@ -47,16 +47,28 @@ const StadiumSectionPath = React.memo(({ spec, occupancyPercent, isSelected, onC
 
   const densityColor = getDensityColor(occupancyPercent);
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick();
+    }
+  };
+
   return (
     <path
       d={describeArc(250, 250, spec.radius, spec.startAngle, spec.endAngle)}
       fill="none"
       stroke={densityColor}
       strokeWidth={spec.width}
-      className={`cursor-pointer transition-all duration-300 ${
+      className={`cursor-pointer transition-all duration-300 focus:outline-none focus:stroke-accent-gold focus:stroke-[25px] ${
         isSelected ? 'stroke-[28px] opacity-100 filter drop-shadow-[0_0_8px_rgba(212,175,55,0.6)]' : 'opacity-85 hover:opacity-100 hover:stroke-[25px]'
       }`}
       onClick={onClick}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
+      role="button"
+      aria-label={`Stadium Section ${spec.id.split(' ')[1]}, Live capacity is ${occupancyPercent} percent`}
+      aria-pressed={isSelected}
     />
   );
 });
@@ -81,10 +93,22 @@ const StadiumGateGroup = React.memo(({ gate, coords, isSelected, activeInc, occu
 
   const densityColor = getDensityColor(occupancyPercent);
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick();
+    }
+  };
+
   return (
     <g 
-      className="cursor-pointer"
+      className="cursor-pointer focus:outline-none group"
       onClick={onClick}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
+      role="button"
+      aria-label={`Stadium Gate ${gate.id.split(' ')[1]}, Live flow is ${occupancyPercent} percent${activeInc ? ', Active operations warning' : ''}`}
+      aria-pressed={isSelected}
     >
       {/* Gate Connection Line */}
       <line x1="250" y1="250" x2={coords.x} y2={coords.y} className="stroke-card-border/30" strokeDasharray="3,3" />
@@ -94,7 +118,7 @@ const StadiumGateGroup = React.memo(({ gate, coords, isSelected, activeInc, occu
         cx={coords.x} 
         cy={coords.y} 
         r={isSelected ? 16 : 14} 
-        className={`fill-card-bg stroke-2 transition-all duration-300 ${
+        className={`fill-card-bg stroke-2 transition-all duration-300 group-focus:stroke-accent-gold group-focus:stroke-[3px] ${
           activeInc ? 'stroke-red-500 animate-pulse' : isSelected ? 'stroke-accent-gold' : 'stroke-card-border'
         }`}
       />
@@ -110,14 +134,14 @@ const StadiumGateGroup = React.memo(({ gate, coords, isSelected, activeInc, occu
         fill="#F5F7F2" 
         fontSize="9" 
         fontWeight="bold"
-        className="font-scoreboard tracking-wider fill-foreground/90 bg-card-bg"
+        className="font-scoreboard tracking-wider fill-foreground/90 bg-card-bg group-hover:fill-accent-gold"
       >
         {gate.id.split(' ')[1]}
       </text>
 
       {/* Live Incident Warning Icon overlay */}
       {activeInc && (
-        <g transform={`translate(${coords.x + 8}, ${coords.y - 8}) scale(0.65)`}>
+        <g transform={`translate(${coords.x + 8}, ${coords.y - 8}) scale(0.65)`} aria-hidden="true">
           <circle cx="0" cy="0" r="10" fill="#EF4444" />
           <text x="0" y="3" textAnchor="middle" fill="#FFF" fontSize="12" fontWeight="bold">!</text>
         </g>

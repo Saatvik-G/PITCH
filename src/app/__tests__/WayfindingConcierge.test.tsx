@@ -60,7 +60,7 @@ describe('WayfindingConcierge Component', () => {
     render(<WayfindingConcierge />);
     
     const input = screen.getByPlaceholderText(/Ask PITCH/i);
-    const sendButton = screen.getByRole('button', { name: '' }); // Send button is styled with an icon, let's find it
+    const sendButton = screen.getByRole('button', { name: /send/i }); // Send button is styled with an icon, let's find it
 
     fireEvent.change(input, { target: { value: "Where is Section 112?" } });
     fireEvent.click(sendButton);
@@ -84,7 +84,7 @@ describe('WayfindingConcierge Component', () => {
     render(<WayfindingConcierge />);
     
     const input = screen.getByPlaceholderText(/Ask PITCH/i);
-    const sendButton = screen.getByRole('button', { name: '' });
+    const sendButton = screen.getByRole('button', { name: /send/i });
 
     fireEvent.change(input, { target: { value: "Where is Gate B?" } });
     fireEvent.click(sendButton);
@@ -102,7 +102,7 @@ describe('WayfindingConcierge Component', () => {
     render(<WayfindingConcierge />);
     
     const input = screen.getByPlaceholderText(/Ask PITCH/i);
-    const sendButton = screen.getByRole('button', { name: '' });
+    const sendButton = screen.getByRole('button', { name: /send/i });
 
     fireEvent.change(input, { target: { value: "Fast egress route?" } });
     fireEvent.click(sendButton);

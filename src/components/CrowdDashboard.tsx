@@ -132,7 +132,8 @@ export const CrowdDashboard: React.FC = () => {
                 key={idx}
                 onClick={() => handleInjectTemplate(tmpl)}
                 disabled={injecting}
-                className="bg-stadium-green-dark hover:bg-stadium-green-light border border-card-border hover:border-accent-gold/40 text-[10px] text-foreground font-semibold py-1.5 px-2 rounded transition-all text-left flex flex-col justify-between h-[52px] cursor-pointer disabled:opacity-50"
+                className="bg-stadium-green-dark hover:bg-stadium-green-light border border-card-border hover:border-accent-gold/40 text-[10px] text-foreground font-semibold py-1.5 px-2 rounded transition-all text-left flex flex-col justify-between h-[52px] cursor-pointer disabled:opacity-50 focus:outline-none focus:ring-1 focus:ring-accent-gold focus:border-accent-gold"
+                aria-label={`Inject incident template: ${tmpl.label}`}
               >
                 <span className="font-scoreboard text-accent-gold leading-tight">{tmpl.label}</span>
                 <span className="text-[8px] text-foreground/60 leading-none truncate w-full">{tmpl.text}</span>
@@ -141,7 +142,7 @@ export const CrowdDashboard: React.FC = () => {
           </div>
 
           <div className="relative flex items-center justify-between border-t border-card-border/40 my-1 py-1">
-            <span className="text-[10px] font-scoreboard text-foreground/40 bg-card-bg px-2 absolute left-1/2 -translate-x-1/2">OR CUSTOM INCIDENT</span>
+            <span className="text-[10px] font-scoreboard text-foreground/70 bg-card-bg px-2 absolute left-1/2 -translate-x-1/2">OR CUSTOM INCIDENT</span>
           </div>
 
           {/* Custom Incident Form */}
@@ -151,20 +152,22 @@ export const CrowdDashboard: React.FC = () => {
               onChange={(e) => setCustomIncidentText(e.target.value)}
               placeholder="Describe incident (e.g. 'Turnstile 4 power failure Gate E'...)"
               rows={2}
-              className="w-full bg-stadium-green-dark/60 border border-card-border rounded px-3 py-1.5 text-xs text-foreground placeholder-foreground/45 focus:outline-none focus:border-accent-gold"
+              className="w-full bg-stadium-green-dark/60 border border-card-border rounded px-3 py-1.5 text-xs text-foreground placeholder-foreground/45 focus:outline-none focus:ring-1 focus:ring-accent-gold focus:border-accent-gold"
               required
               disabled={injecting}
+              aria-label="Describe custom operations incident"
             />
 
             <div className="grid grid-cols-3 gap-2">
               {/* Category */}
               <div>
-                <label className="block text-[9px] uppercase tracking-wider text-foreground/65 mb-1 font-scoreboard">Category</label>
+                <label id="category-label" className="block text-[9px] uppercase tracking-wider text-foreground/65 mb-1 font-scoreboard">Category</label>
                 <select
                   value={incidentCategory}
                   onChange={(e) => setIncidentCategory(e.target.value)}
-                  className="w-full bg-stadium-green-dark border border-card-border rounded p-1 text-[11px] text-foreground focus:outline-none focus:border-accent-gold"
+                  className="w-full bg-stadium-green-dark border border-card-border rounded p-1 text-[11px] text-foreground focus:outline-none focus:ring-1 focus:ring-accent-gold focus:border-accent-gold"
                   disabled={injecting}
+                  aria-labelledby="category-label"
                 >
                   <option value="Crowd Flow">Crowd Flow</option>
                   <option value="Medical">Medical</option>
@@ -175,15 +178,16 @@ export const CrowdDashboard: React.FC = () => {
 
               {/* Gate Link */}
               <div>
-                <label className="block text-[9px] uppercase tracking-wider text-foreground/65 mb-1 font-scoreboard">Link Gate</label>
+                <label id="gate-label" className="block text-[9px] uppercase tracking-wider text-foreground/65 mb-1 font-scoreboard">Link Gate</label>
                 <select
                   value={selectedGate}
                   onChange={(e) => {
                     setSelectedGate(e.target.value);
                     if (e.target.value) setSelectedSection('');
                   }}
-                  className="w-full bg-stadium-green-dark border border-card-border rounded p-1 text-[11px] text-foreground focus:outline-none focus:border-accent-gold"
+                  className="w-full bg-stadium-green-dark border border-card-border rounded p-1 text-[11px] text-foreground focus:outline-none focus:ring-1 focus:ring-accent-gold focus:border-accent-gold"
                   disabled={injecting}
+                  aria-labelledby="gate-label"
                 >
                   <option value="">None</option>
                   {gates.map(g => (
@@ -194,15 +198,16 @@ export const CrowdDashboard: React.FC = () => {
 
               {/* Section Link */}
               <div>
-                <label className="block text-[9px] uppercase tracking-wider text-foreground/65 mb-1 font-scoreboard">Link Section</label>
+                <label id="section-label" className="block text-[9px] uppercase tracking-wider text-foreground/65 mb-1 font-scoreboard">Link Section</label>
                 <select
                   value={selectedSection}
                   onChange={(e) => {
                     setSelectedSection(e.target.value);
                     if (e.target.value) setSelectedGate('');
                   }}
-                  className="w-full bg-stadium-green-dark border border-card-border rounded p-1 text-[11px] text-foreground focus:outline-none focus:border-accent-gold"
+                  className="w-full bg-stadium-green-dark border border-card-border rounded p-1 text-[11px] text-foreground focus:outline-none focus:ring-1 focus:ring-accent-gold focus:border-accent-gold"
                   disabled={injecting}
+                  aria-labelledby="section-label"
                 >
                   <option value="">None</option>
                   {sections.map(s => (
@@ -215,7 +220,7 @@ export const CrowdDashboard: React.FC = () => {
             <button
               type="submit"
               disabled={injecting || !customIncidentText.trim()}
-              className="w-full bg-accent-gold hover:bg-accent-gold-hover disabled:opacity-40 disabled:hover:bg-accent-gold text-stadium-green-dark font-scoreboard text-xs py-2 rounded font-bold cursor-pointer flex items-center justify-center space-x-1"
+              className="w-full bg-accent-gold hover:bg-accent-gold-hover disabled:opacity-40 disabled:hover:bg-accent-gold text-stadium-green-dark font-scoreboard text-xs py-2 rounded font-bold cursor-pointer flex items-center justify-center space-x-1 focus:outline-none focus:ring-1 focus:ring-accent-gold focus:border-accent-gold"
             >
               {injecting ? (
                 <>
@@ -247,29 +252,34 @@ export const CrowdDashboard: React.FC = () => {
             <button
               onClick={() => fetchRecommendations(gates, sections, incidents)}
               disabled={recommendationsLoading}
-              className="p-1 rounded bg-stadium-green-dark/50 hover:bg-stadium-green-light border border-card-border text-foreground hover:text-accent-gold transition-all cursor-pointer disabled:opacity-40"
+              className="p-1 rounded bg-stadium-green-dark/50 hover:bg-stadium-green-light border border-card-border text-foreground hover:text-accent-gold transition-all cursor-pointer disabled:opacity-40 focus:outline-none focus:ring-1 focus:ring-accent-gold focus:border-accent-gold"
               title="Manual Refresh recommendations"
+              aria-label="Refresh AI operations recommendations"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${recommendationsLoading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${recommendationsLoading ? 'animate-spin' : ''}`} aria-hidden="true" />
             </button>
           </div>
 
           {recommendationsLoading && recommendations.length === 0 ? (
-            <div className="flex-1 flex flex-col items-center justify-center py-10 text-center">
-              <Loader2 className="w-8 h-8 text-accent-gold animate-spin mb-3" />
+            <div className="flex-1 flex flex-col items-center justify-center py-10 text-center" role="status" aria-live="polite">
+              <Loader2 className="w-8 h-8 text-accent-gold animate-spin mb-3" aria-hidden="true" />
               <p className="text-xs text-foreground/60 font-scoreboard tracking-wider">AI AGENT COGNITIVE LAYER ANALYZING REAL-TIME METRICS...</p>
             </div>
           ) : (
-            <div className="flex-1 overflow-y-auto space-y-3.5 max-h-[380px] scrollbar pr-1">
+            <div 
+              className="flex-1 overflow-y-auto space-y-3.5 max-h-[380px] scrollbar pr-1"
+              aria-live="polite"
+              aria-relevant="all"
+            >
               {recommendationsLoading && (
-                <div className="bg-stadium-green-light/10 border border-accent-gold/25 p-2 rounded text-center text-[10px] text-accent-gold font-scoreboard tracking-widest animate-pulse flex items-center justify-center space-x-2">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <div className="bg-stadium-green-light/10 border border-accent-gold/25 p-2 rounded text-center text-[10px] text-accent-gold font-scoreboard tracking-widest animate-pulse flex items-center justify-center space-x-2" role="status">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
                   <span>REFRESHING RE-RANKED COMMAND FLOWS...</span>
                 </div>
               )}
               
               {recommendations.length === 0 ? (
-                <div className="text-center py-12 text-xs text-foreground/45">
+                <div className="text-center py-12 text-xs text-foreground/70">
                   No active recommendations. Real-time systems balanced.
                 </div>
               ) : (
@@ -295,7 +305,7 @@ export const CrowdDashboard: React.FC = () => {
                       }`}>
                         {rec.priority} PRIORITY
                       </span>
-                      <span className="text-[9px] text-foreground/40 font-mono">{rec.id}</span>
+                      <span className="text-[9px] text-foreground/70 font-mono">{rec.id}</span>
                     </div>
 
                     <div className="font-semibold text-foreground text-xs leading-tight mb-1">
@@ -328,7 +338,7 @@ export const CrowdDashboard: React.FC = () => {
           </h3>
           <div className="overflow-y-auto space-y-2 flex-1 scrollbar pr-1">
             {incidents.filter(inc => inc.status === 'Active').length === 0 ? (
-              <div className="text-center py-6 text-xs text-foreground/45 italic">
+              <div className="text-center py-6 text-xs text-foreground/70 italic">
                 No active stadium incidents reported. Status Green.
               </div>
             ) : (
@@ -339,7 +349,7 @@ export const CrowdDashboard: React.FC = () => {
                       <span className="bg-red-500/10 text-red-400 font-bold border border-red-500/20 px-1 py-0.2 rounded text-[9px] font-scoreboard">
                         {inc.category}
                       </span>
-                      <span className="text-[9px] text-foreground/40 font-mono">
+                      <span className="text-[9px] text-foreground/70 font-mono">
                         {new Date(inc.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
@@ -347,9 +357,9 @@ export const CrowdDashboard: React.FC = () => {
                   </div>
                   <button
                     onClick={() => resolveIncident(inc.id)}
-                    className="flex items-center space-x-1 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-stadium-green-dark border border-emerald-500/30 rounded px-2.5 py-1 transition-all cursor-pointer font-scoreboard text-[10px] font-bold"
+                    className="flex items-center space-x-1 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-stadium-green-dark border border-emerald-500/30 rounded px-2.5 py-1 transition-all cursor-pointer font-scoreboard text-[10px] font-bold focus:outline-none focus:ring-1 focus:ring-accent-gold"
                   >
-                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />
                     <span>RESOLVE</span>
                   </button>
                 </div>

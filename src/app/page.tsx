@@ -12,7 +12,7 @@ const IncidentSummarizer = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="panel-glass rounded-xl p-5 h-[400px] animate-pulse flex flex-col items-center justify-center text-xs text-foreground/45 font-scoreboard tracking-widest border border-card-border/50">
+      <div className="panel-glass rounded-xl p-5 h-[400px] animate-pulse flex flex-col items-center justify-center text-xs text-foreground/70 font-scoreboard tracking-widest border border-card-border/50">
         LOADING DISPATCH & BRIEFING CONTROL ROOM...
       </div>
     )
@@ -24,7 +24,7 @@ const RoadmapPanel = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="panel-glass rounded-xl p-5 h-32 animate-pulse flex flex-col items-center justify-center text-xs text-foreground/45 font-scoreboard tracking-widest border border-card-border/50">
+      <div className="panel-glass rounded-xl p-5 h-32 animate-pulse flex flex-col items-center justify-center text-xs text-foreground/70 font-scoreboard tracking-widest border border-card-border/50">
         LOADING INTEGRATION ROADMAP PANEL...
       </div>
     )

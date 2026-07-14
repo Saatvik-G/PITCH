@@ -72,7 +72,7 @@ export const IncidentSummarizer: React.FC = () => {
           </div>
           <div>
             <h2 className="font-scoreboard text-base tracking-wider text-foreground">AI BRIEFING & INCIDENT TRIAGE</h2>
-            <div className="text-[9px] text-foreground/50 tracking-wider">
+            <div className="text-[9px] text-foreground/70 tracking-wider">
               RAW RADIO INPUTS TO STRUCTURED VOLUNTEER BRIEFINGS
             </div>
           </div>
@@ -81,16 +81,18 @@ export const IncidentSummarizer: React.FC = () => {
         {/* Action Controls */}
         <div className="flex items-center space-x-2">
           {/* Translation selection for briefing */}
-          <div className="bg-stadium-green-dark/45 border border-card-border rounded flex overflow-hidden">
+          <div className="bg-stadium-green-dark/45 border border-card-border rounded flex overflow-hidden" role="group" aria-label="Select briefing language">
             {(['en', 'es', 'fr'] as const).map(lang => (
               <button
                 key={lang}
                 onClick={() => setBriefingLanguage(lang)}
-                className={`px-2 py-0.5 text-[9px] font-bold uppercase transition-all ${
+                className={`px-2 py-0.5 text-[9px] font-bold uppercase transition-all focus:outline-none focus:ring-1 focus:ring-accent-gold ${
                   briefingLanguage === lang
                     ? 'bg-accent-gold text-stadium-green-dark'
                     : 'text-foreground/75 hover:bg-stadium-green-light/40'
                 }`}
+                aria-label={`Set briefing compilation language to ${lang === 'en' ? 'English' : lang === 'es' ? 'Spanish' : 'French'}`}
+                aria-current={briefingLanguage === lang ? 'true' : undefined}
               >
                 {lang}
               </button>
@@ -100,16 +102,16 @@ export const IncidentSummarizer: React.FC = () => {
           <button
             onClick={generateBriefing}
             disabled={loading}
-            className="bg-accent-gold hover:bg-accent-gold-hover disabled:opacity-40 text-stadium-green-dark font-scoreboard text-[10px] font-bold py-1.5 px-3 rounded flex items-center space-x-1.5 transition-all cursor-pointer glow-gold"
+            className="bg-accent-gold hover:bg-accent-gold-hover disabled:opacity-40 text-stadium-green-dark font-scoreboard text-[10px] font-bold py-1.5 px-3 rounded flex items-center space-x-1.5 transition-all cursor-pointer glow-gold focus:outline-none focus:ring-1 focus:ring-accent-gold focus:border-accent-gold"
           >
             {loading ? (
               <>
-                <Loader2 className="w-3 h-3 animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
                 <span>COMPILING...</span>
               </>
             ) : (
               <>
-                <ClipboardList className="w-3.5 h-3.5" />
+                <ClipboardList className="w-3.5 h-3.5" aria-hidden="true" />
                 <span>GENERATE BRIEFING</span>
               </>
             )}
@@ -124,7 +126,7 @@ export const IncidentSummarizer: React.FC = () => {
             <span className="text-[10px] font-scoreboard tracking-widest text-accent-gold font-bold">
               RAW LOGS FEED (RADIO/SMS)
             </span>
-            <span className="text-[9px] text-foreground/40 font-mono">
+            <span className="text-[9px] text-foreground/70 font-mono">
               TOTAL {reports.length} SIGNALS
             </span>
           </div>
@@ -138,7 +140,7 @@ export const IncidentSummarizer: React.FC = () => {
               >
                 <div className="flex justify-between items-center mb-1 text-[9.5px]">
                   <span className="text-accent-gold font-semibold font-scoreboard">{rep.source}</span>
-                  <span className="text-foreground/40 font-mono">
+                  <span className="text-foreground/70 font-mono">
                     {new Date(rep.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                   </span>
                 </div>
@@ -154,25 +156,27 @@ export const IncidentSummarizer: React.FC = () => {
               value={customReport}
               onChange={(e) => setCustomReport(e.target.value)}
               placeholder="Simulate volunteer radio report..."
-              className="flex-1 bg-stadium-green-dark/60 border border-card-border rounded px-2.5 py-1.5 text-[11px] text-foreground placeholder-foreground/45 focus:outline-none focus:border-accent-gold"
+              className="flex-1 bg-stadium-green-dark/60 border border-card-border rounded px-2.5 py-1.5 text-[11px] text-foreground placeholder-foreground/45 focus:outline-none focus:ring-1 focus:ring-accent-gold focus:border-accent-gold"
               disabled={addingReport || loading}
+              aria-label="Simulate volunteer radio report text"
             />
             <button
               type="submit"
               disabled={addingReport || loading || !customReport.trim()}
-              className="bg-stadium-green-light hover:bg-stadium-green text-foreground p-1.5 rounded transition-all cursor-pointer border border-stadium-green/40"
+              className="bg-stadium-green-light hover:bg-stadium-green text-foreground p-1.5 rounded transition-all cursor-pointer border border-stadium-green/40 focus:outline-none focus:ring-1 focus:ring-accent-gold"
               title="Add radio message"
+              aria-label="Simulate adding raw radio report"
             >
-              <Send className="w-3.5 h-3.5" />
+              <Send className="w-3.5 h-3.5" aria-hidden="true" />
             </button>
           </form>
         </div>
 
         {/* RIGHT COLUMN: Structured AI Briefing Display */}
-        <div className="flex flex-col h-full overflow-hidden pl-1 justify-center">
+        <div className="flex flex-col h-full overflow-hidden pl-1 justify-center" aria-live="polite" lang={briefingLanguage}>
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <Loader2 className="w-8 h-8 text-accent-gold animate-spin mb-3" />
+            <div className="flex flex-col items-center justify-center py-20 text-center" role="status">
+              <Loader2 className="w-8 h-8 text-accent-gold animate-spin mb-3" aria-hidden="true" />
               <p className="text-xs text-foreground/60 font-scoreboard tracking-wider">GEMINI SUMMARIZING RAW FEED...</p>
               <p className="text-[10px] text-accent-gold/50 italic mt-1">Sorting alerts and writing translation...</p>
             </div>
@@ -195,7 +199,7 @@ export const IncidentSummarizer: React.FC = () => {
                 </h4>
                 <div className="space-y-1.5">
                   {briefing.topPriorities.length === 0 ? (
-                    <div className="text-[10.5px] text-foreground/40 italic pl-1">No active critical priorities.</div>
+                    <div className="text-[10.5px] text-foreground/70 italic pl-1">No active critical priorities.</div>
                   ) : (
                     briefing.topPriorities.map((item, idx) => (
                       <div key={idx} className="bg-red-950/10 border border-red-500/10 rounded p-2 text-[11px] leading-snug">
@@ -221,7 +225,7 @@ export const IncidentSummarizer: React.FC = () => {
                 </h4>
                 <div className="space-y-1.5">
                   {briefing.watchList.length === 0 ? (
-                    <div className="text-[10.5px] text-foreground/40 italic pl-1">No items currently on watch-list.</div>
+                    <div className="text-[10.5px] text-foreground/70 italic pl-1">No items currently on watch-list.</div>
                   ) : (
                     briefing.watchList.map((item, idx) => (
                       <div key={idx} className="bg-amber-950/10 border border-amber-500/10 rounded p-2 text-[11px] leading-snug">
@@ -247,7 +251,7 @@ export const IncidentSummarizer: React.FC = () => {
                 </h4>
                 <div className="space-y-1.5">
                   {briefing.resolved.length === 0 ? (
-                    <div className="text-[10.5px] text-foreground/40 italic pl-1">No incidents resolved this shift yet.</div>
+                    <div className="text-[10.5px] text-foreground/70 italic pl-1">No incidents resolved this shift yet.</div>
                   ) : (
                     briefing.resolved.map((item, idx) => (
                       <div key={idx} className="bg-emerald-950/10 border border-emerald-500/10 rounded p-2 text-[11px] leading-snug">
@@ -270,7 +274,7 @@ export const IncidentSummarizer: React.FC = () => {
             <div className="flex-1 flex flex-col items-center justify-center text-center py-20 bg-stadium-green-dark/15 border border-stadium-green/10 rounded-lg p-5">
               <ClipboardList className="w-12 h-12 text-stadium-green/60 mb-2.5" />
               <h4 className="font-scoreboard text-foreground/80 tracking-wider text-xs mb-1">NO BRIEFING GENERATED</h4>
-              <p className="text-[10.5px] text-foreground/50 max-w-[200px] leading-relaxed">
+              <p className="text-[10.5px] text-foreground/70 max-w-[200px] leading-relaxed">
                 Click &quot;Generate Briefing&quot; above to translate raw signal data into a formatted volunteer briefing sheet.
               </p>
             </div>
