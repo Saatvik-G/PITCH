@@ -1,16 +1,48 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { rateLimit } from '@/lib/rateLimit';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const { message, history = [], language = 'en', accessibilityMode = false } = await request.json();
+    // 1. Rate Limiting Check (Max 15 RPM)
+    const limitResult = rateLimit(request, 15);
+    if (!limitResult.success) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { 
+          status: 429,
+          headers: { 
+            'Retry-After': Math.ceil((limitResult.reset - Date.now()) / 1000).toString() 
+          } 
+        }
+      );
+    }
+
+    const body = await request.json();
+    let { message, history = [], language = 'en', accessibilityMode = false } = body;
+
+    // 2. Input Sanitization & Validation
+    if (!message || typeof message !== 'string') {
+      return NextResponse.json({ error: 'Message is required and must be a string.' }, { status: 400 });
+    }
+
+    message = message.trim();
+    if (message.length > 1000) {
+      message = message.substring(0, 1000);
+    }
+    // Strip HTML tags to prevent prompt XSS rendering or parser exploitation
+    message = message.replace(/<\/?[^>]+(>|$)/g, '');
+
+    if (!message) {
+      return NextResponse.json({ error: 'Message cannot be empty.' }, { status: 400 });
+    }
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
-        { error: 'Gemini API key is not configured on the server. Please set GEMINI_API_KEY.' },
+        { error: 'Gemini API key is not configured on the server.' },
         { status: 500 }
       );
     }
@@ -40,22 +72,23 @@ OPERATIONAL RULES:
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ 
-      model: 'gemini-3.5-flash',
+      model: 'gemini-flash-lite-latest',
       systemInstruction: systemInstruction
     });
 
-    // Format chat history for Google Generative AI
-    // SDK expects format: [{ role: 'user' | 'model', parts: [{ text: string }] }]
-    // Ensure history starts with a 'user' message as required by the API
+    // Format and sanitize chat history
     let cleanedHistory = [...history];
     while (cleanedHistory.length > 0 && cleanedHistory[0].role !== 'user') {
       cleanedHistory.shift();
     }
 
-    const formattedHistory = cleanedHistory.map((h: any) => ({
-      role: h.role === 'user' ? 'user' : 'model',
-      parts: [{ text: h.text }]
-    }));
+    const formattedHistory = cleanedHistory.map((h: any) => {
+      let sanitizedText = typeof h.text === 'string' ? h.text.trim().substring(0, 1000).replace(/<\/?[^>]+(>|$)/g, '') : '';
+      return {
+        role: h.role === 'user' ? 'user' : 'model',
+        parts: [{ text: sanitizedText }]
+      };
+    });
 
     // Start a chat session
     const chat = model.startChat({
@@ -86,9 +119,11 @@ Original text to reformat:
       isAccessibleFormatting
     });
   } catch (error: any) {
-    console.error('Error in chat API:', error);
+    // Secure Logging: Log full traceback locally/server-side only
+    console.error('Secure Log - Error in chat API:', error);
+    // Sanitize response to prevent raw SDK or system path leaks
     return NextResponse.json(
-      { error: error.message || 'An error occurred during the request.' },
+      { error: 'The AI concierge is currently experiencing connection issues. Please try again later.' },
       { status: 500 }
     );
   }

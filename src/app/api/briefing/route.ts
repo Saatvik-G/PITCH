@@ -1,21 +1,59 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { rateLimit } from '@/lib/rateLimit';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const { reports = [], language = 'en' } = await request.json();
+    // 1. Rate Limiting Check (Max 15 RPM)
+    const limitResult = rateLimit(request, 15);
+    if (!limitResult.success) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { 
+          status: 429,
+          headers: { 
+            'Retry-After': Math.ceil((limitResult.reset - Date.now()) / 1000).toString() 
+          } 
+        }
+      );
+    }
+
+    const body = await request.json();
+    let { reports = [], language = 'en' } = body;
+
+    // 2. Structure Validation
+    if (!Array.isArray(reports)) {
+      return NextResponse.json({ error: 'Reports must be a valid array.' }, { status: 400 });
+    }
+
+    // Guard against large arrays to prevent context-exhaustion attacks
+    if (reports.length > 50) {
+      reports = reports.slice(0, 50);
+    }
+
+    if (typeof language !== 'string' || !['en', 'es', 'fr'].includes(language)) {
+      language = 'en';
+    }
+
+    // 3. Input Sanitization & Tag Stripping
+    const sanitizedReports = reports
+      .map((r: any) => {
+        if (typeof r !== 'string') return '';
+        return r.trim().substring(0, 500).replace(/<\/?[^>]+(>|$)/g, '');
+      })
+      .filter(Boolean);
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
-        { error: 'Gemini API key is not configured on the server. Please set GEMINI_API_KEY.' },
+        { error: 'Gemini API key is not configured on the server.' },
         { status: 500 }
       );
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
-      model: 'gemini-3.5-flash',
+      model: 'gemini-flash-lite-latest',
       generationConfig: {
         responseMimeType: 'application/json',
       }
@@ -36,7 +74,7 @@ Your task is to review a feed of raw, messy radio-call logs, volunteer text repo
 All output fields, summaries, and actions MUST be written in ${targetLang}.
 
 RAW FEED:
-${JSON.stringify(reports, null, 2)}
+${JSON.stringify(sanitizedReports, null, 2)}
 
 INSTRUCTIONS:
 1. Summarize and categorize each report.
@@ -80,7 +118,7 @@ JSON Schema:
       const briefing = JSON.parse(textResponse.trim());
       return NextResponse.json(briefing);
     } catch (parseError) {
-      console.error('Failed to parse Gemini briefing output:', textResponse);
+      console.error('Secure Log - Failed to parse Gemini briefing output:', textResponse);
       return NextResponse.json({
         topPriorities: [
           {
@@ -94,9 +132,11 @@ JSON Schema:
       });
     }
   } catch (error: any) {
-    console.error('Error in briefing API:', error);
+    // Secure Logging: Log traceback server-side only
+    console.error('Secure Log - Error in briefing API:', error);
+    // Sanitize response
     return NextResponse.json(
-      { error: error.message || 'An error occurred during the request.' },
+      { error: 'Failed to generate briefing due to a connection timeout.' },
       { status: 500 }
     );
   }
