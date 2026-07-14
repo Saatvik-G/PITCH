@@ -1,0 +1,190 @@
+{
+  "stadiumName": "PITCH Arena (Metropolitan Hub)",
+  "totalCapacity": 80000,
+  "gates": [
+    {
+      "id": "Gate A",
+      "name": "North Gate (Gate A)",
+      "status": "Active",
+      "transitConnections": ["Metro Line 1 (North)", "Northern Shuttle Terminal"],
+      "accessibility": "Tactile paving, 1:12 slope ramp, low-counter turnstiles, assistance kiosk.",
+      "baseOccupancyPercent": 45,
+      "coordinates": { "x": 50, "y": 12 },
+      "direction": "North"
+    },
+    {
+      "id": "Gate B",
+      "name": "Northeast Gate (Gate B)",
+      "status": "Active",
+      "transitConnections": ["Parking Lot A Shuttle", "Express Charter Buses"],
+      "accessibility": "Zero-step level entrance, automatic wide sliding doors.",
+      "baseOccupancyPercent": 78,
+      "coordinates": { "x": 82, "y": 28 },
+      "direction": "Northeast"
+    },
+    {
+      "id": "Gate C",
+      "name": "Southeast Gate (Gate C)",
+      "status": "Active",
+      "transitConnections": ["Rideshare Drop-off (Lot C)", "Bicycle Valet"],
+      "accessibility": "Dedicated wheelchair assistance lane, electric shuttle transfer station.",
+      "baseOccupancyPercent": 62,
+      "coordinates": { "x": 82, "y": 72 },
+      "direction": "Southeast"
+    },
+    {
+      "id": "Gate D",
+      "name": "South Gate (Gate D)",
+      "status": "Active",
+      "transitConnections": ["Central Bus Terminus", "Metro Line 2 (South)"],
+      "accessibility": "Dual-platform passenger elevators, level landing areas, sensory-friendly entry lane.",
+      "baseOccupancyPercent": 55,
+      "coordinates": { "x": 50, "y": 88 },
+      "direction": "South"
+    },
+    {
+      "id": "Gate E",
+      "name": "Southwest Gate (Gate E)",
+      "status": "Active",
+      "transitConnections": ["Parking Lot B (West)", "Disabled Parking Deck B"],
+      "accessibility": "Direct connection to wheelchair-accessible parking, covered canopy, 1:15 ramp.",
+      "baseOccupancyPercent": 72,
+      "coordinates": { "x": 18, "y": 72 },
+      "direction": "Southwest"
+    },
+    {
+      "id": "Gate F",
+      "name": "Northwest Gate (Gate F)",
+      "status": "Active",
+      "transitConnections": ["Pedestrian Walkway West", "Park & Ride Shuttle C"],
+      "accessibility": "Level concrete pathway, designated guide dog relief area near entrance.",
+      "baseOccupancyPercent": 38,
+      "coordinates": { "x": 18, "y": 28 },
+      "direction": "Northwest"
+    }
+  ],
+  "sections": [
+    {
+      "id": "Sec 101-110",
+      "name": "Sections 101-110 (North Lower)",
+      "level": "100 Level",
+      "baseOccupancyPercent": 70,
+      "capacity": 5500,
+      "nearestGate": "Gate A",
+      "accessibility": "Level access via Concourse A; 12 designated wheelchair berths in Row W.",
+      "amenities": {
+        "restrooms": "North Concourse Restrooms (Accessible, Gender-Neutral, Baby Changing)",
+        "concessions": "Burger Pavilion (Standard/GF options), Stadium Draft Beer"
+      }
+    },
+    {
+      "id": "Sec 111-120",
+      "name": "Sections 111-120 (East Lower)",
+      "level": "100 Level",
+      "baseOccupancyPercent": 85,
+      "capacity": 6000,
+      "nearestGate": "Gate B",
+      "accessibility": "Level access via Concourse B; 14 wheelchair berths in Row W.",
+      "amenities": {
+        "restrooms": "East Concourse Restrooms (Standard & Accessible)",
+        "concessions": "El Tri Tacos (Gluten-Free Tortillas, Vegan Chorizo), Soft Drinks"
+      }
+    },
+    {
+      "id": "Sec 121-130",
+      "name": "Sections 121-130 (South Lower)",
+      "level": "100 Level",
+      "baseOccupancyPercent": 60,
+      "capacity": 5500,
+      "nearestGate": "Gate D",
+      "accessibility": "Level access via Concourse D; Elevator next to Section 125; 16 wheelchair berths.",
+      "amenities": {
+        "restrooms": "South Concourse Restrooms (Accessible, Sensory-Decompression Zone adjacent)",
+        "concessions": "Maple Dog & Poutine (Standard/Halal), Hydration Station"
+      }
+    },
+    {
+      "id": "Sec 131-140",
+      "name": "Sections 131-140 (West Lower)",
+      "level": "100 Level",
+      "baseOccupancyPercent": 92,
+      "capacity": 6000,
+      "nearestGate": "Gate E",
+      "accessibility": "Level access via Concourse E; 12 wheelchair berths.",
+      "amenities": {
+        "restrooms": "West Concourse Restrooms (Standard & Accessible)",
+        "concessions": "Le Coq Bistro (French Classics, Vegan Baguettes), Brews & Wines"
+      }
+    },
+    {
+      "id": "Sec 201-215",
+      "name": "Sections 201-215 (North Middle)",
+      "level": "200 Level",
+      "baseOccupancyPercent": 50,
+      "capacity": 4500,
+      "nearestGate": "Gate A",
+      "accessibility": "Accessible via North Elevators (Elevator Bank 1); Level paths to seats.",
+      "amenities": {
+        "restrooms": "North Mid-Deck Restrooms (All-Gender Accessible)",
+        "concessions": "Stadium Grill (Premium Meats, Vegetarian Burgers)"
+      }
+    },
+    {
+      "id": "Sec 216-230",
+      "name": "Sections 216-230 (East/South Middle)",
+      "level": "200 Level",
+      "baseOccupancyPercent": 75,
+      "capacity": 6500,
+      "nearestGate": "Gate C",
+      "accessibility": "Accessible via South Elevators (Elevator Bank 2); Level paths.",
+      "amenities": {
+        "restrooms": "East & South Mid-Deck Restrooms (Accessible)",
+        "concessions": "World Cup Cantina (Premium Nachos, Soft Drinks, Cocktails)"
+      }
+    },
+    {
+      "id": "Sec 231-245",
+      "name": "Sections 231-245 (West Middle)",
+      "level": "200 Level",
+      "baseOccupancyPercent": 65,
+      "capacity": 4500,
+      "nearestGate": "Gate F",
+      "accessibility": "Accessible via West Elevators (Elevator Bank 3); Ramp access to lower rows.",
+      "amenities": {
+        "restrooms": "West Mid-Deck Restrooms (Accessible)",
+        "concessions": "Healthy Bowls (Vegan, Gluten-Free, Organic)"
+      }
+    },
+    {
+      "id": "Sec 301-320",
+      "name": "Sections 301-320 (North Upper)",
+      "level": "300 Level",
+      "baseOccupancyPercent": 40,
+      "capacity": 9000,
+      "nearestGate": "Gate A",
+      "accessibility": "Requires elevator transport from Main Concourse (Bank 1) or escalators. Ramps available but steep.",
+      "amenities": {
+        "restrooms": "Upper Deck North Restrooms (Accessible stall, baby changing)",
+        "concessions": "Pretzel & Popcorn Cart, Bottled Soda/Water"
+      }
+    },
+    {
+      "id": "Sec 321-340",
+      "name": "Sections 321-340 (South Upper)",
+      "level": "300 Level",
+      "baseOccupancyPercent": 88,
+      "capacity": 9500,
+      "nearestGate": "Gate D",
+      "accessibility": "Requires elevator transport from South Concourse (Bank 2) or escalators.",
+      "amenities": {
+        "restrooms": "Upper Deck South Restrooms (Accessible stall)",
+        "concessions": "Snack Counter (Hot dogs, popcorn, standard drinks)"
+      }
+    }
+  ],
+  "accessibilityServices": {
+    "wheelchairEscort": "Available at all Gates (A-F). Ask any volunteer in a gold vest or visit Assistance Kiosks located at Gate A, Gate D, and Concourse Section 120.",
+    "elevators": "Three main banks: Bank 1 (North, serving 100-300), Bank 2 (South, serving 100-300), Bank 3 (West, serving 100-200). Only ticketed accessibility guests permitted.",
+    "sensoryRooms": "Located at Concourse Section 124. Features sound-dampening, low lighting, and sensory tools. Open to all families/individuals."
+  }
+}

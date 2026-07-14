@@ -1,0 +1,58 @@
+[
+  {
+    "id": "REP-001",
+    "timestamp": "2026-07-13T11:40:00Z",
+    "source": "Radio Ch 3 (Facilities)",
+    "text": "Facilities copy: large liquid spill near Section 112 concourse. Slip hazard reported. Janitorial dispatched with wet floor signs. ETA 3 mins.",
+    "status": "Active",
+    "category": "Maintenance"
+  },
+  {
+    "id": "REP-002",
+    "timestamp": "2026-07-13T11:42:15Z",
+    "source": "Vol 14 (Gate D)",
+    "text": "Fan in wheelchair lost on Gate D ramp. Ticketing shows Section 322, but they cannot find elevator Bank 2. Need immediate golf cart escort or supervisor support.",
+    "status": "Active",
+    "category": "Accessibility"
+  },
+  {
+    "id": "REP-003",
+    "timestamp": "2026-07-13T11:45:30Z",
+    "source": "Gate B Sup",
+    "text": "Turnstile 3 scanner is frozen. Backup starting to form outside Gate B. Hard reboot in progress. Requesting crowd flow officer to divert incoming fans to turnstiles 4 and 5.",
+    "status": "Active",
+    "category": "Crowd Flow"
+  },
+  {
+    "id": "REP-004",
+    "timestamp": "2026-07-13T11:47:00Z",
+    "source": "Concessions 218",
+    "text": "Concession Stand 218 reports out of bottled water. High humidity causing rapid depletion. Restock truck requested from South warehouse. Current temp 29C.",
+    "status": "Active",
+    "category": "Concessions"
+  },
+  {
+    "id": "REP-005",
+    "timestamp": "2026-07-13T11:50:20Z",
+    "source": "Radio Ch 1 (Security)",
+    "text": "Unit 22 responding to Section 332, Row F. Minor verbal dispute between opposing fans. Sector supervisor on site trying to de-escalate. Standing by.",
+    "status": "Active",
+    "category": "Security"
+  },
+  {
+    "id": "REP-006",
+    "timestamp": "2026-07-13T11:51:10Z",
+    "source": "Medics (Sec 224)",
+    "text": "Medic Team 4 on-scene Section 224 Row K. Male 45y complaining of mild chest pain/dizziness. Initial assessment ongoing. Preparing wheelchair transport to Medical Station East.",
+    "status": "Active",
+    "category": "Medical"
+  },
+  {
+    "id": "REP-007",
+    "timestamp": "2026-07-13T11:52:45Z",
+    "source": "Gate E entry",
+    "text": "Digital barcode scanner at Turnstile 1 failing to read Mexican mobile ticket apps. Backup of ~40 fans. Tech support notified. Manual ticket lookup activated.",
+    "status": "Active",
+    "category": "Ticketing"
+  }
+]
