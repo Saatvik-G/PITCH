@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import venueRaw from '../data/venue.json';
 import initialReports from '../data/reports.json';
 
@@ -152,7 +152,7 @@ export const StadiumProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, []);
 
   // Inject incident
-  const injectIncident = async (text: string, category: string, gateId?: string, sectionId?: string) => {
+  const injectIncident = useCallback(async (text: string, category: string, gateId?: string, sectionId?: string) => {
     const id = `INC-${Math.floor(103 + Math.random() * 897)}`;
     const timestamp = new Date().toISOString();
     const newIncident: Incident = {
@@ -174,10 +174,10 @@ export const StadiumProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     // Trigger immediate recommendation refresh with the new state
     await fetchRecommendations(gates, sections, updatedIncidents);
-  };
+  }, [incidents, gates, sections, addRawReport, fetchRecommendations]);
 
   // Resolve incident
-  const resolveIncident = async (id: string) => {
+  const resolveIncident = useCallback(async (id: string) => {
     const updatedIncidents = incidents.map(inc => 
       inc.id === id ? { ...inc, status: 'Resolved' as const } : inc
     );
@@ -191,7 +191,7 @@ export const StadiumProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     // Trigger recommendation refresh
     await fetchRecommendations(gates, sections, updatedIncidents);
-  };
+  }, [incidents, gates, sections, addRawReport, fetchRecommendations]);
 
   // Run ticking simulation for gates and sections
   useEffect(() => {
@@ -231,20 +231,34 @@ export const StadiumProvider: React.FC<{ children: React.ReactNode }> = ({ child
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const contextValue = useMemo(() => ({
+    gates,
+    sections,
+    incidents,
+    reports,
+    recommendations,
+    recommendationsLoading,
+    overallOccupancy,
+    injectIncident,
+    resolveIncident,
+    fetchRecommendations,
+    addRawReport
+  }), [
+    gates,
+    sections,
+    incidents,
+    reports,
+    recommendations,
+    recommendationsLoading,
+    overallOccupancy,
+    injectIncident,
+    resolveIncident,
+    fetchRecommendations,
+    addRawReport
+  ]);
+
   return (
-    <StadiumContext.Provider value={{
-      gates,
-      sections,
-      incidents,
-      reports,
-      recommendations,
-      recommendationsLoading,
-      overallOccupancy,
-      injectIncident,
-      resolveIncident,
-      fetchRecommendations,
-      addRawReport
-    }}>
+    <StadiumContext.Provider value={contextValue}>
       {children}
     </StadiumContext.Provider>
   );

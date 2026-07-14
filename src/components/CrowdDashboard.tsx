@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useStadium } from '../context/StadiumContext';
 import { AlertOctagon, CheckCircle2, Flame, Loader2, RefreshCw, ShieldAlert, Sparkles, UserCheck } from 'lucide-react';
 
@@ -24,7 +24,7 @@ export const CrowdDashboard: React.FC = () => {
   const [injecting, setInjecting] = useState(false);
 
   // Quick incident templates for judges to demo instantly
-  const templates = [
+  const templates = useMemo(() => [
     {
       label: "Medical (Sec 125)",
       text: "Medical Emergency: Fan experiencing severe heat exhaustion in Section 125. Medic dispatch required.",
@@ -43,15 +43,15 @@ export const CrowdDashboard: React.FC = () => {
       category: "Maintenance",
       sectionId: "Sec 201-215"
     }
-  ];
+  ], []);
 
-  const handleInjectTemplate = async (tmpl: typeof templates[0]) => {
+  const handleInjectTemplate = useCallback(async (tmpl: any) => {
     setInjecting(true);
     await injectIncident(tmpl.text, tmpl.category, tmpl.gateId, tmpl.sectionId);
     setInjecting(false);
-  };
+  }, [injectIncident]);
 
-  const handleSubmitCustom = async (e: React.FormEvent) => {
+  const handleSubmitCustom = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!customIncidentText.trim()) return;
 
@@ -66,7 +66,7 @@ export const CrowdDashboard: React.FC = () => {
     setSelectedGate('');
     setSelectedSection('');
     setInjecting(false);
-  };
+  }, [customIncidentText, incidentCategory, selectedGate, selectedSection, injectIncident]);
 
   // Helper for progress bar color
   const getProgressColor = (percent: number) => {

@@ -5,8 +5,32 @@ import { useStadium } from '@/context/StadiumContext';
 import { StadiumMap } from '@/components/StadiumMap';
 import { CrowdDashboard } from '@/components/CrowdDashboard';
 import { WayfindingConcierge } from '@/components/WayfindingConcierge';
-import { IncidentSummarizer } from '@/components/IncidentSummarizer';
-import { RoadmapPanel } from '@/components/RoadmapPanel';
+import dynamic from 'next/dynamic';
+
+const IncidentSummarizer = dynamic(
+  () => import('@/components/IncidentSummarizer').then(mod => mod.IncidentSummarizer),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="panel-glass rounded-xl p-5 h-[400px] animate-pulse flex flex-col items-center justify-center text-xs text-foreground/45 font-scoreboard tracking-widest border border-card-border/50">
+        LOADING DISPATCH & BRIEFING CONTROL ROOM...
+      </div>
+    )
+  }
+);
+
+const RoadmapPanel = dynamic(
+  () => import('@/components/RoadmapPanel').then(mod => mod.RoadmapPanel),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="panel-glass rounded-xl p-5 h-32 animate-pulse flex flex-col items-center justify-center text-xs text-foreground/45 font-scoreboard tracking-widest border border-card-border/50">
+        LOADING INTEGRATION ROADMAP PANEL...
+      </div>
+    )
+  }
+);
+
 import { Activity, ShieldCheck, Trophy, Users } from 'lucide-react';
 
 export default function Home() {

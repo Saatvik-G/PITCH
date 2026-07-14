@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useStadium, GateState, SectionState } from '../context/StadiumContext';
-import { AlertTriangle, Compass, MapPin } from 'lucide-react';
+import { AlertTriangle, Compass } from 'lucide-react';
 
 // Polar coordinate math for drawing circular stadium rings
 function polarToCartesian(centerX: number, centerY: number, radius: number, angleInDegrees: number) {
@@ -24,19 +24,115 @@ function describeArc(x: number, y: number, radius: number, startAngle: number, e
   ].join(" ");
 }
 
-export const StadiumMap: React.FC = () => {
-  const { gates, sections, incidents } = useStadium();
-  const [selectedEntity, setSelectedEntity] = useState<{ type: 'gate' | 'section'; data: any } | null>(null);
+// Optimized, memoized Section Arc Component
+interface SectionPathProps {
+  spec: {
+    id: string;
+    startAngle: number;
+    endAngle: number;
+    radius: number;
+    width: number;
+  };
+  occupancyPercent: number;
+  isSelected: boolean;
+  onClick: () => void;
+}
 
-  // Density color mapping helper
+const StadiumSectionPath = React.memo(({ spec, occupancyPercent, isSelected, onClick }: SectionPathProps) => {
   const getDensityColor = (percent: number) => {
     if (percent < 60) return '#10B981'; // Green (Low)
     if (percent < 85) return '#F59E0B'; // Yellow (Medium)
     return '#EF4444'; // Red (High)
   };
 
+  const densityColor = getDensityColor(occupancyPercent);
+
+  return (
+    <path
+      d={describeArc(250, 250, spec.radius, spec.startAngle, spec.endAngle)}
+      fill="none"
+      stroke={densityColor}
+      strokeWidth={spec.width}
+      className={`cursor-pointer transition-all duration-300 ${
+        isSelected ? 'stroke-[28px] opacity-100 filter drop-shadow-[0_0_8px_rgba(212,175,55,0.6)]' : 'opacity-85 hover:opacity-100 hover:stroke-[25px]'
+      }`}
+      onClick={onClick}
+    />
+  );
+});
+StadiumSectionPath.displayName = 'StadiumSectionPath';
+
+// Optimized, memoized Gate Node Component
+interface GateGroupProps {
+  gate: GateState;
+  coords: { x: number; y: number };
+  isSelected: boolean;
+  activeInc: boolean;
+  occupancyPercent: number;
+  onClick: () => void;
+}
+
+const StadiumGateGroup = React.memo(({ gate, coords, isSelected, activeInc, occupancyPercent, onClick }: GateGroupProps) => {
+  const getDensityColor = (percent: number) => {
+    if (percent < 60) return '#10B981';
+    if (percent < 85) return '#F59E0B';
+    return '#EF4444';
+  };
+
+  const densityColor = getDensityColor(occupancyPercent);
+
+  return (
+    <g 
+      className="cursor-pointer"
+      onClick={onClick}
+    >
+      {/* Gate Connection Line */}
+      <line x1="250" y1="250" x2={coords.x} y2={coords.y} className="stroke-card-border/30" strokeDasharray="3,3" />
+
+      {/* Gate Badge Circle */}
+      <circle 
+        cx={coords.x} 
+        cy={coords.y} 
+        r={isSelected ? 16 : 14} 
+        className={`fill-card-bg stroke-2 transition-all duration-300 ${
+          activeInc ? 'stroke-red-500 animate-pulse' : isSelected ? 'stroke-accent-gold' : 'stroke-card-border'
+        }`}
+      />
+      
+      {/* Inner status/occupancy dot */}
+      <circle cx={coords.x} cy={coords.y} r="5" fill={densityColor} />
+      
+      {/* Label text */}
+      <text 
+        x={coords.x} 
+        y={coords.y - 18} 
+        textAnchor="middle" 
+        fill="#F5F7F2" 
+        fontSize="9" 
+        fontWeight="bold"
+        className="font-scoreboard tracking-wider fill-foreground/90 bg-card-bg"
+      >
+        {gate.id.split(' ')[1]}
+      </text>
+
+      {/* Live Incident Warning Icon overlay */}
+      {activeInc && (
+        <g transform={`translate(${coords.x + 8}, ${coords.y - 8}) scale(0.65)`}>
+          <circle cx="0" cy="0" r="10" fill="#EF4444" />
+          <text x="0" y="3" textAnchor="middle" fill="#FFF" fontSize="12" fontWeight="bold">!</text>
+        </g>
+      )}
+    </g>
+  );
+});
+StadiumGateGroup.displayName = 'StadiumGateGroup';
+
+export const StadiumMap: React.FC = () => {
+  const { gates, sections, incidents } = useStadium();
+  const [selectedEntity, setSelectedEntity] = useState<{ type: 'gate' | 'section'; data: any } | null>(null);
+
   // Section arc definitions (angles mapped to layout orientation)
-  const sectionSpecs = [
+  const sectionSpecs = useMemo(() => [
     { id: "Sec 101-110", startAngle: 315, endAngle: 405, radius: 105, width: 22 }, // North Lower
     { id: "Sec 111-120", startAngle: 45, endAngle: 135, radius: 105, width: 22 },  // East Lower
     { id: "Sec 121-130", startAngle: 135, endAngle: 225, radius: 105, width: 22 }, // South Lower
@@ -48,25 +144,25 @@ export const StadiumMap: React.FC = () => {
     
     { id: "Sec 301-320", startAngle: 300, endAngle: 420, radius: 165, width: 22 }, // North Upper
     { id: "Sec 321-340", startAngle: 120, endAngle: 300, radius: 165, width: 22 }  // South Upper
-  ];
+  ], []);
 
   // Map gates to SVG coordinates
-  const gateCoords: Record<string, { x: number; y: number }> = {
+  const gateCoords = useMemo((): Record<string, { x: number; y: number }> => ({
     "Gate A": { x: 250, y: 35 },
     "Gate B": { x: 415, y: 130 },
     "Gate C": { x: 415, y: 370 },
     "Gate D": { x: 250, y: 465 },
     "Gate E": { x: 85, y: 370 },
     "Gate F": { x: 85, y: 130 }
-  };
+  }), []);
 
   // Helper to determine if an incident is active at this gate or section
-  const hasIncident = (id: string, isGate = false) => {
+  const hasIncident = useCallback((id: string, isGate = false) => {
     return incidents.some(inc => 
       inc.status === 'Active' && 
       (isGate ? inc.gateId === id : inc.sectionId === id)
     );
-  };
+  }, [incidents]);
 
   return (
     <div className="panel-glass rounded-xl p-5 flex flex-col h-full">
@@ -104,19 +200,13 @@ export const StadiumMap: React.FC = () => {
             if (!sectionData) return null;
             
             const isSelected = selectedEntity?.type === 'section' && selectedEntity.data.id === spec.id;
-            const densityColor = getDensityColor(sectionData.occupancyPercent);
-            const activeInc = hasIncident(spec.id);
 
             return (
-              <path
+              <StadiumSectionPath
                 key={spec.id}
-                d={describeArc(250, 250, spec.radius, spec.startAngle, spec.endAngle)}
-                fill="none"
-                stroke={densityColor}
-                strokeWidth={spec.width}
-                className={`cursor-pointer transition-all duration-300 ${
-                  isSelected ? 'stroke-[28px] opacity-100 filter drop-shadow-[0_0_8px_rgba(212,175,55,0.6)]' : 'opacity-85 hover:opacity-100 hover:stroke-[25px]'
-                }`}
+                spec={spec}
+                occupancyPercent={sectionData.occupancyPercent}
+                isSelected={isSelected}
                 onClick={() => setSelectedEntity({ type: 'section', data: sectionData })}
               />
             );
@@ -147,51 +237,17 @@ export const StadiumMap: React.FC = () => {
             
             const isSelected = selectedEntity?.type === 'gate' && selectedEntity.data.id === gate.id;
             const activeInc = hasIncident(gate.id, true);
-            const densityColor = getDensityColor(gate.occupancyPercent);
 
             return (
-              <g 
+              <StadiumGateGroup
                 key={gate.id}
-                className="cursor-pointer"
+                gate={gate}
+                coords={coords}
+                isSelected={isSelected}
+                activeInc={activeInc}
+                occupancyPercent={gate.occupancyPercent}
                 onClick={() => setSelectedEntity({ type: 'gate', data: gate })}
-              >
-                {/* Gate Connection Line */}
-                <line x1="250" y1="250" x2={coords.x} y2={coords.y} className="stroke-card-border/30" strokeDasharray="3,3" />
-
-                {/* Gate Badge Circle */}
-                <circle 
-                  cx={coords.x} 
-                  cy={coords.y} 
-                  r={isSelected ? 16 : 14} 
-                  className={`fill-card-bg stroke-2 transition-all duration-300 ${
-                    activeInc ? 'stroke-red-500 animate-pulse' : isSelected ? 'stroke-accent-gold' : 'stroke-card-border'
-                  }`}
-                />
-                
-                {/* Inner status/occupancy dot */}
-                <circle cx={coords.x} cy={coords.y} r="5" fill={densityColor} />
-                
-                {/* Label text */}
-                <text 
-                  x={coords.x} 
-                  y={coords.y - 18} 
-                  textAnchor="middle" 
-                  fill="#F5F7F2" 
-                  fontSize="9" 
-                  fontWeight="bold"
-                  className="font-scoreboard tracking-wider fill-foreground/90 bg-card-bg"
-                >
-                  {gate.id.split(' ')[1]} {/* Just 'A', 'B', etc */}
-                </text>
-
-                {/* Live Incident Warning Icon overlay */}
-                {activeInc && (
-                  <g transform={`translate(${coords.x + 8}, ${coords.y - 8}) scale(0.65)`}>
-                    <circle cx="0" cy="0" r="10" fill="#EF4444" />
-                    <text x="0" y="3" textAnchor="middle" fill="#FFF" fontSize="12" fontWeight="bold">!</text>
-                  </g>
-                )}
-              </g>
+              />
             );
           })}
         </svg>
