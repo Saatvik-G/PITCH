@@ -1,8 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { rateLimit } from '@/lib/rateLimit';
+import { getGeminiModel } from '@/lib/gemini';
+
+interface IncidentInput {
+  id: string;
+  text: string;
+  category: string;
+  status: string;
+}
+
+interface GateInput {
+  id: string;
+  name: string;
+  occupancyPercent: number;
+}
+
+interface SectionInput {
+  id: string;
+  name: string;
+  occupancyPercent: number;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,7 +40,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { gates, sections, incidents = [] } = body;
+    const { gates, sections, incidents = [] } = body as {
+      gates: GateInput[];
+      sections: SectionInput[];
+      incidents?: IncidentInput[];
+    };
 
     // 2. Input Structure Validation
     if (!Array.isArray(gates) || !Array.isArray(sections) || !Array.isArray(incidents)) {
@@ -29,46 +52,34 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Input Sanitization & Data Bounding
-    const sanitizedIncidents = incidents.map((inc: any) => {
-      let text = typeof inc.text === 'string' ? inc.text.trim().substring(0, 1000).replace(/<\/?[^>]+(>|$)/g, '') : '';
-      let category = typeof inc.category === 'string' ? inc.category.trim().substring(0, 100).replace(/<\/?[^>]+(>|$)/g, '') : 'General';
-      let id = typeof inc.id === 'string' ? inc.id.trim().substring(0, 50).replace(/<\/?[^>]+(>|$)/g, '') : 'INC-GEN';
+    const sanitizedIncidents = incidents.map((inc) => {
+      const text = typeof inc.text === 'string' ? inc.text.trim().substring(0, 1000).replace(/<\/?[^>]+(>|$)/g, '') : '';
+      const category = typeof inc.category === 'string' ? inc.category.trim().substring(0, 100).replace(/<\/?[^>]+(>|$)/g, '') : 'General';
+      const id = typeof inc.id === 'string' ? inc.id.trim().substring(0, 50).replace(/<\/?[^>]+(>|$)/g, '') : 'INC-GEN';
       return { ...inc, id, text, category };
     });
 
-    const sanitizedGates = gates.map((g: any) => {
-      let id = typeof g.id === 'string' ? g.id.substring(0, 20) : '';
-      let name = typeof g.name === 'string' ? g.name.substring(0, 50) : '';
-      let occupancyPercent = typeof g.occupancyPercent === 'number' ? Math.max(0, Math.min(100, g.occupancyPercent)) : 0;
+    const sanitizedGates = gates.map((g) => {
+      const id = typeof g.id === 'string' ? g.id.substring(0, 20) : '';
+      const name = typeof g.name === 'string' ? g.name.substring(0, 50) : '';
+      const occupancyPercent = typeof g.occupancyPercent === 'number' ? Math.max(0, Math.min(100, g.occupancyPercent)) : 0;
       return { ...g, id, name, occupancyPercent };
     });
 
-    const sanitizedSections = sections.map((s: any) => {
-      let id = typeof s.id === 'string' ? s.id.substring(0, 20) : '';
-      let name = typeof s.name === 'string' ? s.name.substring(0, 50) : '';
-      let occupancyPercent = typeof s.occupancyPercent === 'number' ? Math.max(0, Math.min(100, s.occupancyPercent)) : 0;
+    const sanitizedSections = sections.map((s) => {
+      const id = typeof s.id === 'string' ? s.id.substring(0, 20) : '';
+      const name = typeof s.name === 'string' ? s.name.substring(0, 50) : '';
+      const occupancyPercent = typeof s.occupancyPercent === 'number' ? Math.max(0, Math.min(100, s.occupancyPercent)) : 0;
       return { ...s, id, name, occupancyPercent };
     });
-
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: 'Gemini API key is not configured on the server.' },
-        { status: 500 }
-      );
-    }
 
     // Load venue data as static context for RAG validation
     const venuePath = path.join(process.cwd(), 'src', 'data', 'venue.json');
     const venueDataRaw = await fs.readFile(venuePath, 'utf8');
     const venueData = JSON.parse(venueDataRaw);
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-flash-lite-latest',
-      generationConfig: {
-        responseMimeType: 'application/json',
-      }
+    const model = getGeminiModel({
+      responseMimeType: 'application/json'
     });
 
     const prompt = `
@@ -109,7 +120,7 @@ JSON Schema:
     try {
       const recommendations = JSON.parse(textResponse.trim());
       return NextResponse.json(recommendations);
-    } catch (parseError) {
+    } catch {
       console.error('Secure Log - Failed to parse Gemini recommendations output:', textResponse);
       // Fallback in case of json parsing issues
       return NextResponse.json([
@@ -122,7 +133,7 @@ JSON Schema:
         }
       ]);
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Secure Logging: Log traceback server-side only
     console.error('Secure Log - Error in recommendations API:', error);
     // Sanitize response

@@ -2,7 +2,15 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { useStadium } from '../context/StadiumContext';
-import { AlertOctagon, CheckCircle2, Flame, Loader2, RefreshCw, ShieldAlert, Sparkles, UserCheck } from 'lucide-react';
+import { AlertOctagon, CheckCircle2, Loader2, RefreshCw, ShieldAlert, Sparkles } from 'lucide-react';
+
+interface IncidentTemplate {
+  label: string;
+  text: string;
+  category: string;
+  gateId?: string;
+  sectionId?: string;
+}
 
 export const CrowdDashboard: React.FC = () => {
   const {
@@ -45,7 +53,7 @@ export const CrowdDashboard: React.FC = () => {
     }
   ], []);
 
-  const handleInjectTemplate = useCallback(async (tmpl: any) => {
+  const handleInjectTemplate = useCallback(async (tmpl: IncidentTemplate) => {
     setInjecting(true);
     await injectIncident(tmpl.text, tmpl.category, tmpl.gateId, tmpl.sectionId);
     setInjecting(false);

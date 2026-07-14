@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Accessibility, Languages, Send, ShieldAlert, Sparkles, User, Volume2 } from 'lucide-react';
+import { Accessibility, Send, Sparkles, User, Volume2 } from 'lucide-react';
 
 interface ChatMessage {
   role: 'user' | 'model';
@@ -97,7 +97,7 @@ export const WayfindingConcierge: React.FC = () => {
           text: `SYSTEM ERROR: ${errData.error || 'Failed to connect to PA System.'}`
         }]);
       }
-    } catch (error) {
+    } catch {
       setMessages(prev => [...prev, {
         role: 'model',
         text: "SYSTEM OFFLINE: Connection error. Check server status."

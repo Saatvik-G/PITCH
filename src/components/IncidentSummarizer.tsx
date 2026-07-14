@@ -271,7 +271,7 @@ export const IncidentSummarizer: React.FC = () => {
               <ClipboardList className="w-12 h-12 text-stadium-green/60 mb-2.5" />
               <h4 className="font-scoreboard text-foreground/80 tracking-wider text-xs mb-1">NO BRIEFING GENERATED</h4>
               <p className="text-[10.5px] text-foreground/50 max-w-[200px] leading-relaxed">
-                Click "Generate Briefing" above to translate raw signal data into a formatted volunteer briefing sheet.
+                Click &quot;Generate Briefing&quot; above to translate raw signal data into a formatted volunteer briefing sheet.
               </p>
             </div>
           )}

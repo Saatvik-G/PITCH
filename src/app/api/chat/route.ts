@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { rateLimit } from '@/lib/rateLimit';
+import { getGeminiModel } from '@/lib/gemini';
+
+interface ChatMessage {
+  role: 'user' | 'model';
+  text: string;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,30 +26,27 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    let { message, history = [], language = 'en', accessibilityMode = false } = body;
+    const { message, history = [], language = 'en', accessibilityMode = false } = body as {
+      message: string;
+      history?: ChatMessage[];
+      language?: string;
+      accessibilityMode?: boolean;
+    };
 
     // 2. Input Sanitization & Validation
     if (!message || typeof message !== 'string') {
       return NextResponse.json({ error: 'Message is required and must be a string.' }, { status: 400 });
     }
 
-    message = message.trim();
-    if (message.length > 1000) {
-      message = message.substring(0, 1000);
+    let sanitizedMessage = message.trim();
+    if (sanitizedMessage.length > 1000) {
+      sanitizedMessage = sanitizedMessage.substring(0, 1000);
     }
     // Strip HTML tags to prevent prompt XSS rendering or parser exploitation
-    message = message.replace(/<\/?[^>]+(>|$)/g, '');
+    sanitizedMessage = sanitizedMessage.replace(/<\/?[^>]+(>|$)/g, '');
 
-    if (!message) {
+    if (!sanitizedMessage) {
       return NextResponse.json({ error: 'Message cannot be empty.' }, { status: 400 });
-    }
-
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: 'Gemini API key is not configured on the server.' },
-        { status: 500 }
-      );
     }
 
     // Load venue data
@@ -70,20 +72,17 @@ OPERATIONAL RULES:
    - If language is 'en', reply in English.
 `;
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ 
-      model: 'gemini-flash-lite-latest',
-      systemInstruction: systemInstruction
-    });
+    // Initialize Gemini client using centralized utility
+    const model = getGeminiModel({ systemInstruction });
 
     // Format and sanitize chat history
-    let cleanedHistory = [...history];
+    const cleanedHistory = [...history];
     while (cleanedHistory.length > 0 && cleanedHistory[0].role !== 'user') {
       cleanedHistory.shift();
     }
 
-    const formattedHistory = cleanedHistory.map((h: any) => {
-      let sanitizedText = typeof h.text === 'string' ? h.text.trim().substring(0, 1000).replace(/<\/?[^>]+(>|$)/g, '') : '';
+    const formattedHistory = cleanedHistory.map((h) => {
+      const sanitizedText = typeof h.text === 'string' ? h.text.trim().substring(0, 1000).replace(/<\/?[^>]+(>|$)/g, '') : '';
       return {
         role: h.role === 'user' ? 'user' : 'model',
         parts: [{ text: sanitizedText }]
@@ -95,7 +94,7 @@ OPERATIONAL RULES:
       history: formattedHistory,
     });
 
-    const response = await chat.sendMessage(message);
+    const response = await chat.sendMessage(sanitizedMessage);
     let finalAnswer = response.response.text();
 
     // If accessibility mode is enabled, run a second LLM call to reformat into simple, step-by-step instructions.
@@ -118,7 +117,7 @@ Original text to reformat:
       answer: finalAnswer,
       isAccessibleFormatting
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Secure Logging: Log full traceback locally/server-side only
     console.error('Secure Log - Error in chat API:', error);
     // Sanitize response to prevent raw SDK or system path leaks

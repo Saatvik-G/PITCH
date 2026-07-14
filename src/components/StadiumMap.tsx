@@ -129,7 +129,7 @@ StadiumGateGroup.displayName = 'StadiumGateGroup';
 
 export const StadiumMap: React.FC = () => {
   const { gates, sections, incidents } = useStadium();
-  const [selectedEntity, setSelectedEntity] = useState<{ type: 'gate' | 'section'; data: any } | null>(null);
+  const [selectedEntity, setSelectedEntity] = useState<{ type: 'gate' | 'section'; data: GateState | SectionState } | null>(null);
 
   // Section arc definitions (angles mapped to layout orientation)
   const sectionSpecs = useMemo(() => [

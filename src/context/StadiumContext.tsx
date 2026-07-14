@@ -82,7 +82,7 @@ export const StadiumProvider: React.FC<{ children: React.ReactNode }> = ({ child
     venueRaw.sections.map(s => ({ ...s, occupancyPercent: s.baseOccupancyPercent }))
   );
 
-  const [incidents, setIncidents] = useState<Incident[]>([
+  const [incidents, setIncidents] = useState<Incident[]>(() => [
     {
       id: "INC-101",
       timestamp: new Date(Date.now() - 900000).toISOString(), // 15 mins ago
@@ -227,7 +227,10 @@ export const StadiumProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Fetch initial recommendations on load
   useEffect(() => {
-    fetchRecommendations(gates, sections, incidents);
+    const timer = setTimeout(() => {
+      fetchRecommendations(gates, sections, incidents);
+    }, 0);
+    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { rateLimit } from '@/lib/rateLimit';
+import { getGeminiModel } from '@/lib/gemini';
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,7 +19,10 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    let { reports = [], language = 'en' } = body;
+    const { reports = [], language = 'en' } = body as {
+      reports?: string[];
+      language?: string;
+    };
 
     // 2. Structure Validation
     if (!Array.isArray(reports)) {
@@ -27,36 +30,19 @@ export async function POST(request: NextRequest) {
     }
 
     // Guard against large arrays to prevent context-exhaustion attacks
-    if (reports.length > 50) {
-      reports = reports.slice(0, 50);
-    }
-
-    if (typeof language !== 'string' || !['en', 'es', 'fr'].includes(language)) {
-      language = 'en';
-    }
+    const cappedReports = reports.length > 50 ? reports.slice(0, 50) : reports;
+    const targetLangCode = typeof language === 'string' && ['en', 'es', 'fr'].includes(language) ? language : 'en';
 
     // 3. Input Sanitization & Tag Stripping
-    const sanitizedReports = reports
-      .map((r: any) => {
+    const sanitizedReports = cappedReports
+      .map((r) => {
         if (typeof r !== 'string') return '';
         return r.trim().substring(0, 500).replace(/<\/?[^>]+(>|$)/g, '');
       })
       .filter(Boolean);
 
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: 'Gemini API key is not configured on the server.' },
-        { status: 500 }
-      );
-    }
-
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-flash-lite-latest',
-      generationConfig: {
-        responseMimeType: 'application/json',
-      }
+    const model = getGeminiModel({
+      responseMimeType: 'application/json'
     });
 
     const languageNames: Record<string, string> = {
@@ -65,7 +51,7 @@ export async function POST(request: NextRequest) {
       fr: 'French'
     };
 
-    const targetLang = languageNames[language] || 'English';
+    const targetLang = languageNames[targetLangCode] || 'English';
 
     const prompt = `
 You are the Operations Chief at PITCH Arena.
@@ -117,7 +103,7 @@ JSON Schema:
     try {
       const briefing = JSON.parse(textResponse.trim());
       return NextResponse.json(briefing);
-    } catch (parseError) {
+    } catch {
       console.error('Secure Log - Failed to parse Gemini briefing output:', textResponse);
       return NextResponse.json({
         topPriorities: [
@@ -131,7 +117,7 @@ JSON Schema:
         watchList: []
       });
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Secure Logging: Log traceback server-side only
     console.error('Secure Log - Error in briefing API:', error);
     // Sanitize response
