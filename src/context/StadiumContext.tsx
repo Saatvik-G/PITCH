@@ -75,6 +75,22 @@ export interface TransitRecommendation {
   alternateRouteSuggestion: string;
 }
 
+export interface WasteBin {
+  id: string;
+  zoneName: string;
+  fillLevelPercent: number;
+  type: 'general' | 'recycling' | 'compost';
+  isHighLitterZone: boolean;
+  lastEmptiedTime: string;
+}
+
+export interface WasteRouteItem {
+  binId: string;
+  priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  action: string;
+  estFillRateHour: number;
+}
+
 interface StadiumContextType {
   gates: GateState[];
   sections: SectionState[];
@@ -87,12 +103,18 @@ interface StadiumContextType {
   finalWhistleTriggered: boolean;
   transitRecommendations: TransitRecommendation[];
   transitRecommendationsLoading: boolean;
+  wasteBins: WasteBin[];
+  halftimeRushActive: boolean;
+  wasteRecommendations: WasteRouteItem[];
+  wasteRecommendationsLoading: boolean;
   injectIncident: (text: string, category: string, gateId?: string, sectionId?: string) => Promise<void>;
   resolveIncident: (id: string) => Promise<void>;
   fetchRecommendations: (currentGates: GateState[], currentSections: SectionState[], currentIncidents: Incident[]) => Promise<void>;
   addRawReport: (source: string, text: string, category: string) => void;
   simulateFinalWhistle: () => Promise<void>;
   fetchTransitRecommendations: (currentModes: TransitMode[], whistleActive: boolean) => Promise<void>;
+  simulateHalftimeRush: () => Promise<void>;
+  fetchWasteRecommendations: (currentBins: WasteBin[], halftimeActive: boolean) => Promise<void>;
 }
 
 const StadiumContext = createContext<StadiumContextType | undefined>(undefined);
@@ -182,6 +204,21 @@ export const StadiumProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [transitRecommendations, setTransitRecommendations] = useState<TransitRecommendation[]>([]);
   const [transitRecommendationsLoading, setTransitRecommendationsLoading] = useState<boolean>(false);
 
+  // Waste & Sustainability States
+  const [wasteBins, setWasteBins] = useState<WasteBin[]>(() => [
+    { id: 'bin-001', zoneName: 'Concession Plaza A', fillLevelPercent: 35, type: 'recycling', isHighLitterZone: true, lastEmptiedTime: new Date(Date.now() - 3600000).toISOString() },
+    { id: 'bin-002', zoneName: 'Concession Plaza A', fillLevelPercent: 42, type: 'general', isHighLitterZone: true, lastEmptiedTime: new Date(Date.now() - 3600000).toISOString() },
+    { id: 'bin-003', zoneName: 'Gate B Fan Zone', fillLevelPercent: 28, type: 'general', isHighLitterZone: true, lastEmptiedTime: new Date(Date.now() - 1800000).toISOString() },
+    { id: 'bin-004', zoneName: 'Gate B Fan Zone', fillLevelPercent: 20, type: 'compost', isHighLitterZone: true, lastEmptiedTime: new Date(Date.now() - 1800000).toISOString() },
+    { id: 'bin-005', zoneName: 'Section 120 Food Court', fillLevelPercent: 50, type: 'recycling', isHighLitterZone: true, lastEmptiedTime: new Date(Date.now() - 5400000).toISOString() },
+    { id: 'bin-006', zoneName: 'Gate E Outer Perimeter', fillLevelPercent: 15, type: 'general', isHighLitterZone: false, lastEmptiedTime: new Date(Date.now() - 7200000).toISOString() },
+    { id: 'bin-007', zoneName: 'Gate A Entrance Hall', fillLevelPercent: 30, type: 'recycling', isHighLitterZone: false, lastEmptiedTime: new Date(Date.now() - 4800000).toISOString() },
+    { id: 'bin-008', zoneName: 'South VIP Lounge', fillLevelPercent: 12, type: 'compost', isHighLitterZone: false, lastEmptiedTime: new Date(Date.now() - 9000000).toISOString() }
+  ]);
+  const [halftimeRushActive, setHalftimeRushActive] = useState<boolean>(false);
+  const [wasteRecommendations, setWasteRecommendations] = useState<WasteRouteItem[]>([]);
+  const [wasteRecommendationsLoading, setWasteRecommendationsLoading] = useState<boolean>(false);
+
   // Function to fetch recommendations from Gemini API
   const fetchRecommendations = useCallback(async (
     currentGates: GateState[],
@@ -242,6 +279,35 @@ export const StadiumProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setTransitRecommendationsLoading(false);
     }
   }, [incidents, gates]);
+
+  // Fetch waste routing recommendations from Gemini API
+  const fetchWasteRecommendations = useCallback(async (
+    currentBins: WasteBin[],
+    halftimeActive: boolean
+  ) => {
+    setWasteRecommendationsLoading(true);
+    try {
+      const response = await fetch('/api/waste', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          wasteBins: currentBins,
+          halftimeRushActive: halftimeActive,
+          incidents: incidents.filter(inc => inc.status === 'Active')
+        })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setWasteRecommendations(data);
+      } else {
+        console.error('Failed to generate waste routing recommendations');
+      }
+    } catch (e) {
+      console.error('Error fetching waste recommendations:', e);
+    } finally {
+      setWasteRecommendationsLoading(false);
+    }
+  }, [incidents]);
 
   // Add a raw report manually or programmatically
   const addRawReport = useCallback((source: string, text: string, category: string) => {
@@ -343,7 +409,37 @@ export const StadiumProvider: React.FC<{ children: React.ReactNode }> = ({ child
     await fetchTransitRecommendations(spikedModes, true);
   }, [transitModes, addRawReport, fetchTransitRecommendations]);
 
-  // Run ticking simulation for gates, sections, and transit modes
+  // Trigger Simulate Halftime Rush bin spikes
+  const simulateHalftimeRush = useCallback(async () => {
+    setHalftimeRushActive(true);
+
+    // Spike fill level of bins in concession and food court areas
+    const spikedBins: WasteBin[] = wasteBins.map(bin => {
+      if (bin.isHighLitterZone) {
+        let fill = 88;
+        if (bin.id === 'bin-002') fill = 92;
+        else if (bin.id === 'bin-005') fill = 90;
+        else if (bin.id === 'bin-003') fill = 85;
+        return {
+          ...bin,
+          fillLevelPercent: fill
+        };
+      }
+      return {
+        ...bin,
+        fillLevelPercent: Math.min(75, bin.fillLevelPercent + 20)
+      };
+    });
+    setWasteBins(spikedBins);
+
+    // Log to raw reports
+    addRawReport("Concession Plaza A", "HALFTIME RUSH ACTIVE. High-volume litter accumulation reported in Food Courts.", "Maintenance");
+
+    // Fetch waste recommendations immediately
+    await fetchWasteRecommendations(spikedBins, true);
+  }, [wasteBins, addRawReport, fetchWasteRecommendations]);
+
+  // Run ticking simulation for gates, sections, transit modes, and waste bins
   useEffect(() => {
     const interval = setInterval(() => {
       // Fluctuate gate occupancy randomly (+/- 1% to 3%)
@@ -384,6 +480,18 @@ export const StadiumProvider: React.FC<{ children: React.ReactNode }> = ({ child
         })
       );
 
+      // Accumulate waste in IoT bins
+      setWasteBins(prevBins =>
+        prevBins.map(bin => {
+          let accumulation = Math.floor(Math.random() * 3) + 1; // +1% to +3%
+          if (halftimeRushActive && bin.isHighLitterZone) {
+            accumulation = Math.floor(Math.random() * 5) + 3; // +3% to +7% during halftime rush
+          }
+          const newFill = Math.min(100, bin.fillLevelPercent + accumulation);
+          return { ...bin, fillLevelPercent: newFill };
+        })
+      );
+
       // Fluctuate overall stadium occupancy slightly
       setOverallOccupancy(prev => {
         if (finalWhistleTriggered) {
@@ -398,13 +506,14 @@ export const StadiumProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }, 8000); // ticks every 8 seconds
 
     return () => clearInterval(interval);
-  }, [finalWhistleTriggered]);
+  }, [finalWhistleTriggered, halftimeRushActive]);
 
   // Fetch initial recommendations on load
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchRecommendations(gates, sections, incidents);
       fetchTransitRecommendations(transitModes, finalWhistleTriggered);
+      fetchWasteRecommendations(wasteBins, halftimeRushActive);
     }, 0);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -422,12 +531,18 @@ export const StadiumProvider: React.FC<{ children: React.ReactNode }> = ({ child
     finalWhistleTriggered,
     transitRecommendations,
     transitRecommendationsLoading,
+    wasteBins,
+    halftimeRushActive,
+    wasteRecommendations,
+    wasteRecommendationsLoading,
     injectIncident,
     resolveIncident,
     fetchRecommendations,
     addRawReport,
     simulateFinalWhistle,
-    fetchTransitRecommendations
+    fetchTransitRecommendations,
+    simulateHalftimeRush,
+    fetchWasteRecommendations
   }), [
     gates,
     sections,
@@ -440,12 +555,18 @@ export const StadiumProvider: React.FC<{ children: React.ReactNode }> = ({ child
     finalWhistleTriggered,
     transitRecommendations,
     transitRecommendationsLoading,
+    wasteBins,
+    halftimeRushActive,
+    wasteRecommendations,
+    wasteRecommendationsLoading,
     injectIncident,
     resolveIncident,
     fetchRecommendations,
     addRawReport,
     simulateFinalWhistle,
-    fetchTransitRecommendations
+    fetchTransitRecommendations,
+    simulateHalftimeRush,
+    fetchWasteRecommendations
   ]);
 
   return (

@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Leaf, Navigation } from 'lucide-react';
+import { Navigation, Droplet } from 'lucide-react';
 
 export const RoadmapPanel: React.FC = () => {
   return (
@@ -30,21 +30,21 @@ export const RoadmapPanel: React.FC = () => {
           </p>
         </div>
 
-        {/* Sustainability & Waste Routing */}
+        {/* Resource & Water Grid */}
         <div className="bg-stadium-green-dark/40 border border-card-border/60 rounded-lg p-4 relative overflow-hidden transition-all hover:border-accent-gold/30">
           <div className="absolute top-0 right-0 p-3 opacity-15">
-            <Leaf className="w-12 h-12 text-emerald-400" />
+            <Droplet className="w-12 h-12 text-emerald-400" />
           </div>
           
           <div className="flex items-center space-x-2 mb-2">
             <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
             <h4 className="font-scoreboard text-xs font-bold text-emerald-400 tracking-wider">
-              Sustainability & Waste Routing (Phase 2)
+              Intelligent Resource & Water Grid (Phase 2)
             </h4>
           </div>
           
           <p className="text-xs text-foreground/85 leading-relaxed font-sans">
-            Connecting stadium IoT weight-sensored garbage receptacles with volunteer cleaning routes to dynamically map cleanup priorities during match downtime. The AI routing engine will evaluate live bin capacity, historical high-litter concession zones, and volunteer positions to output optimal cleanup paths on volunteer handheld devices. This maximizes recycling compliance, reduces waste overflow, and accelerates stadium cleaning loops between matches.
+            Deploying flow-monitoring IoT sensors across stadium restroom piping and concessions beverage lines. PITCH will detect pressure drops or leaks instantly, coordinate auto-shutoff valves during high-occupancy intervals, and dynamically regulate water pressure to reduce overall matchday resource waste.
           </p>
         </div>
       </div>

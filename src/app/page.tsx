@@ -31,17 +31,18 @@ const TransitOptimization = dynamic(
   }
 );
 
-const RoadmapPanel = dynamic(
-  () => import('@/components/RoadmapPanel').then(mod => mod.RoadmapPanel),
+const WasteRouting = dynamic(
+  () => import('@/components/WasteRouting').then(mod => mod.WasteRouting),
   {
     ssr: false,
     loading: () => (
-      <div className="panel-glass rounded-xl p-5 h-32 animate-pulse flex flex-col items-center justify-center text-xs text-foreground/70 font-scoreboard tracking-widest border border-card-border/50">
-        LOADING INTEGRATION ROADMAP PANEL...
+      <div className="panel-glass rounded-xl p-5 h-[380px] animate-pulse flex flex-col items-center justify-center text-xs text-foreground/70 font-scoreboard tracking-widest border border-card-border/50">
+        LOADING SUSTAINABILITY & WASTE ROUTING...
       </div>
     )
   }
 );
+
 
 import { Activity, ShieldCheck, Trophy, Users } from 'lucide-react';
 
@@ -144,10 +145,11 @@ export default function Home() {
           <TransitOptimization />
         </div>
 
-        {/* ROW 4: Tier 2 Integration Roadmap */}
+        {/* ROW 4: Sustainability & Waste Routing */}
         <div className="mt-2 h-fit">
-          <RoadmapPanel />
+          <WasteRouting />
         </div>
+
 
       </main>
 
