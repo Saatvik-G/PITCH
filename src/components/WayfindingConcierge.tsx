@@ -55,13 +55,16 @@ export const WayfindingConcierge: React.FC = () => {
     scrollToBottom();
   }, [messages, loading]);
 
+  const loadingRef = useRef(false);
+
   const handleSendMessage = async (textToSend: string) => {
-    if (!textToSend.trim()) return;
+    if (!textToSend.trim() || loadingRef.current) return;
+    loadingRef.current = true;
+    setLoading(true);
 
     const userMessage: ChatMessage = { role: 'user', text: textToSend };
     setMessages(prev => [...prev, userMessage]);
     setInputText('');
-    setLoading(true);
 
     try {
       // Build history for API request (omitting welcome message at index 0 to ensure it starts with a 'user' message)
@@ -103,6 +106,7 @@ export const WayfindingConcierge: React.FC = () => {
         text: "SYSTEM OFFLINE: Connection error. Check server status."
       }]);
     } finally {
+      loadingRef.current = false;
       setLoading(false);
     }
   };

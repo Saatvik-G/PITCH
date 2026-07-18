@@ -88,7 +88,7 @@ export const WasteRouting: React.FC = () => {
         <button
           onClick={handleHalftimeClick}
           disabled={localLoading || wasteRecommendationsLoading}
-          className={`px-4 py-1.5 rounded font-scoreboard text-[10px] tracking-wider font-bold transition-all flex items-center space-x-1.5 cursor-pointer focus:outline-none focus:ring-1 focus:ring-accent-gold focus:border-accent-gold border ${
+          className={`px-4 py-1.5 rounded font-scoreboard text-[10px] tracking-wider font-bold transition-all flex items-center space-x-1.5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent-gold focus:border-accent-gold border ${
             halftimeRushActive
               ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
               : 'bg-accent-gold hover:bg-accent-gold-hover text-stadium-green-dark border-accent-gold glow-gold'
@@ -149,7 +149,7 @@ export const WasteRouting: React.FC = () => {
                       {bin.type}
                     </span>
                     {bin.isHighLitterZone && (
-                      <span className="text-[7.5px] font-bold uppercase px-1 rounded bg-accent-gold/15 text-accent-gold border border-accent-gold/20">
+                      <span className="text-[7.5px] font-bold uppercase px-1 rounded bg-red-500/10 text-red-400 border border-red-500/20">
                         High Litter
                       </span>
                     )}

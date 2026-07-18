@@ -60,15 +60,15 @@ export async function POST(request: NextRequest) {
     });
 
     const sanitizedGates = gates.map((g) => {
-      const id = typeof g.id === 'string' ? g.id.substring(0, 20) : '';
-      const name = typeof g.name === 'string' ? g.name.substring(0, 50) : '';
+      const id = typeof g.id === 'string' ? g.id.substring(0, 20).replace(/<\/?[^>]+(>|$)/g, '') : '';
+      const name = typeof g.name === 'string' ? g.name.substring(0, 50).replace(/<\/?[^>]+(>|$)/g, '') : '';
       const occupancyPercent = typeof g.occupancyPercent === 'number' ? Math.max(0, Math.min(100, g.occupancyPercent)) : 0;
       return { ...g, id, name, occupancyPercent };
     });
 
     const sanitizedSections = sections.map((s) => {
-      const id = typeof s.id === 'string' ? s.id.substring(0, 20) : '';
-      const name = typeof s.name === 'string' ? s.name.substring(0, 50) : '';
+      const id = typeof s.id === 'string' ? s.id.substring(0, 20).replace(/<\/?[^>]+(>|$)/g, '') : '';
+      const name = typeof s.name === 'string' ? s.name.substring(0, 50).replace(/<\/?[^>]+(>|$)/g, '') : '';
       const occupancyPercent = typeof s.occupancyPercent === 'number' ? Math.max(0, Math.min(100, s.occupancyPercent)) : 0;
       return { ...s, id, name, occupancyPercent };
     });

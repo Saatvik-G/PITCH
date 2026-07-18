@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { useStadium } from '../context/StadiumContext';
 import { AlertOctagon, CheckCircle2, Loader2, RefreshCw, ShieldAlert, Sparkles } from 'lucide-react';
 
@@ -30,6 +30,7 @@ export const CrowdDashboard: React.FC = () => {
   const [selectedSection, setSelectedSection] = useState('');
 
   const [injecting, setInjecting] = useState(false);
+  const injectingRef = useRef(false);
 
   // Quick incident templates for judges to demo instantly
   const templates = useMemo(() => [
@@ -46,34 +47,45 @@ export const CrowdDashboard: React.FC = () => {
       gateId: "Gate B"
     },
     {
-      label: "Water Leak (Sec 204)",
-      text: "Facilities Alert: Major water pipe leak in Section 204 concourse. Slip hazard, power cut required in zone.",
-      category: "Maintenance",
-      sectionId: "Sec 201-215"
+      label: "Facilities (Sec 210)",
+      text: "Facilities Hazard: Structural railing damage reported near row 14 section 210. Structural safety check required.",
+      category: "Facilities",
+      sectionId: "Sec 201-210"
     }
   ], []);
 
   const handleInjectTemplate = useCallback(async (tmpl: IncidentTemplate) => {
+    if (injectingRef.current) return;
+    injectingRef.current = true;
     setInjecting(true);
-    await injectIncident(tmpl.text, tmpl.category, tmpl.gateId, tmpl.sectionId);
-    setInjecting(false);
+    try {
+      await injectIncident(tmpl.text, tmpl.category, tmpl.gateId, tmpl.sectionId);
+    } finally {
+      injectingRef.current = false;
+      setInjecting(false);
+    }
   }, [injectIncident]);
 
   const handleSubmitCustom = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customIncidentText.trim()) return;
+    if (!customIncidentText.trim() || injectingRef.current) return;
 
+    injectingRef.current = true;
     setInjecting(true);
-    await injectIncident(
-      customIncidentText,
-      incidentCategory,
-      selectedGate || undefined,
-      selectedSection || undefined
-    );
-    setCustomIncidentText('');
-    setSelectedGate('');
-    setSelectedSection('');
-    setInjecting(false);
+    try {
+      await injectIncident(
+        customIncidentText,
+        incidentCategory,
+        selectedGate || undefined,
+        selectedSection || undefined
+      );
+      setCustomIncidentText('');
+      setSelectedGate('');
+      setSelectedSection('');
+    } finally {
+      injectingRef.current = false;
+      setInjecting(false);
+    }
   }, [customIncidentText, incidentCategory, selectedGate, selectedSection, injectIncident]);
 
   // Helper for progress bar color

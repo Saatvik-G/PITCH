@@ -112,4 +112,24 @@ describe('WayfindingConcierge Component', () => {
       expect(screen.getByText(/SYSTEM OFFLINE: Connection error/i)).toBeInTheDocument();
     });
   });
+
+  test('should throttle rapid double-clicks on the send message button', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({ answer: "Routing info", isAccessibleFormatting: false })
+    });
+
+    render(<WayfindingConcierge />);
+    
+    const input = screen.getByPlaceholderText(/Ask PITCH/i);
+    const sendButton = screen.getByRole('button', { name: /send/i });
+
+    fireEvent.change(input, { target: { value: "Where is Gate B?" } });
+    
+    // Click twice rapidly
+    fireEvent.click(sendButton);
+    fireEvent.click(sendButton);
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+  });
 });

@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { CrowdDashboard } from '../../components/CrowdDashboard';
 import { useStadium } from '../../context/StadiumContext';
 
@@ -133,5 +133,32 @@ describe('CrowdDashboard Component', () => {
 
     render(<CrowdDashboard />);
     expect(screen.getByText(/No active recommendations. Real-time systems balanced./i)).toBeInTheDocument();
+  });
+
+  test('should throttle rapid double-clicks on template incident triggers', async () => {
+    render(<CrowdDashboard />);
+    
+    const medicalTemplateButton = screen.getByRole('button', { name: /Medical \(Sec 125\)/i });
+    await act(async () => {
+      fireEvent.click(medicalTemplateButton);
+      fireEvent.click(medicalTemplateButton);
+    });
+
+    expect(mockInjectIncident).toHaveBeenCalledTimes(1);
+  });
+
+  test('should throttle rapid double-clicks on custom incident triggers', async () => {
+    render(<CrowdDashboard />);
+    
+    const textarea = screen.getByPlaceholderText(/Describe incident/i);
+    const submitButton = screen.getByRole('button', { name: /INJECT CUSTOM INCIDENT/i });
+
+    fireEvent.change(textarea, { target: { value: "Water leak in section 105" } });
+    await act(async () => {
+      fireEvent.click(submitButton);
+      fireEvent.click(submitButton);
+    });
+
+    expect(mockInjectIncident).toHaveBeenCalledTimes(1);
   });
 });

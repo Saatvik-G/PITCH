@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useStadium } from '../context/StadiumContext';
 import { ClipboardList, Loader2, Radio, Send, Sparkles } from 'lucide-react';
 
@@ -24,9 +24,12 @@ export const IncidentSummarizer: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [customReport, setCustomReport] = useState('');
   const [addingReport, setAddingReport] = useState(false);
+  const loadingRef = useRef(false);
 
   // Generate briefing via LLM API call
   const generateBriefing = async () => {
+    if (loadingRef.current) return;
+    loadingRef.current = true;
     setLoading(true);
     try {
       const response = await fetch('/api/briefing', {
@@ -47,6 +50,7 @@ export const IncidentSummarizer: React.FC = () => {
     } catch (e) {
       console.error('Error generating briefing:', e);
     } finally {
+      loadingRef.current = false;
       setLoading(false);
     }
   };

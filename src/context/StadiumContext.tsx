@@ -325,13 +325,15 @@ export const StadiumProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Inject incident
   const injectIncident = useCallback(async (text: string, category: string, gateId?: string, sectionId?: string) => {
+    const sanitizedText = typeof text === 'string' ? text.trim().substring(0, 1000).replace(/<\/?[^>]+(>|$)/g, '') : '';
+    const sanitizedCategory = typeof category === 'string' ? category.trim().substring(0, 100).replace(/<\/?[^>]+(>|$)/g, '') : 'General';
     const id = `INC-${Math.floor(103 + Math.random() * 897)}`;
     const timestamp = new Date().toISOString();
     const newIncident: Incident = {
       id,
       timestamp,
-      text,
-      category,
+      text: sanitizedText,
+      category: sanitizedCategory,
       status: 'Active',
       gateId,
       sectionId
@@ -342,7 +344,7 @@ export const StadiumProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     // Add to raw reports so the briefing summarizer picks it up
     const source = gateId ? `${gateId} Entry` : sectionId ? `Sec ${sectionId}` : "Ops Center";
-    addRawReport(source, text, category);
+    addRawReport(source, sanitizedText, sanitizedCategory);
 
     // Trigger immediate recommendation refresh with the new state
     await fetchRecommendations(gates, sections, updatedIncidents);

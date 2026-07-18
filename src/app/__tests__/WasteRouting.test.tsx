@@ -77,6 +77,18 @@ describe('WasteRouting Component', () => {
     expect(mockSimulateHalftimeRush).toHaveBeenCalledTimes(1);
   });
 
+  test('should throttle rapid double-clicks on the halftime rush button', () => {
+    render(<WasteRouting />);
+
+    const triggerButton = screen.getByRole('button', { name: /SIMULATE HALFTIME RUSH/i });
+    
+    // Fire double click rapidly
+    fireEvent.click(triggerButton);
+    fireEvent.click(triggerButton);
+
+    expect(mockSimulateHalftimeRush).toHaveBeenCalledTimes(1);
+  });
+
   test('should display loading skeleton when recommendations are loading', () => {
     (useStadium as jest.Mock).mockReturnValue({
       wasteBins: mockWasteBins,
@@ -106,5 +118,18 @@ describe('WasteRouting Component', () => {
     expect(screen.getByText('HIGH')).toBeInTheDocument();
     expect(screen.getByText('Empty recycling bin-001 at Concession Plaza A immediately.')).toBeInTheDocument();
     expect(screen.getByText('+45%/hr')).toBeInTheDocument();
+  });
+
+  test('should display fallback empty state when waste recommendations API fails or returns empty list', () => {
+    (useStadium as jest.Mock).mockReturnValue({
+      wasteBins: mockWasteBins,
+      halftimeRushActive: true,
+      wasteRecommendations: [],
+      wasteRecommendationsLoading: false,
+      simulateHalftimeRush: mockSimulateHalftimeRush
+    });
+
+    render(<WasteRouting />);
+    expect(screen.getByText(/NO ACTIVE ROUTING ALERTS/i)).toBeInTheDocument();
   });
 });

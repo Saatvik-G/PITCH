@@ -108,4 +108,21 @@ describe('IncidentSummarizer Component', () => {
       expect(screen.getByText(/Review raw logs manually/i)).toBeInTheDocument();
     });
   });
+
+  test('should throttle rapid double-clicks on compile briefing button', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({ topPriorities: [], resolved: [], watchList: [] })
+    });
+
+    render(<IncidentSummarizer />);
+    
+    const generateButton = screen.getByRole('button', { name: /GENERATE BRIEFING/i });
+    
+    // Click twice rapidly
+    fireEvent.click(generateButton);
+    fireEvent.click(generateButton);
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+  });
 });

@@ -89,6 +89,18 @@ describe('TransitOptimization Component', () => {
     expect(mockSimulateFinalWhistle).toHaveBeenCalledTimes(1);
   });
 
+  test('should throttle rapid double-clicks on the final whistle button', () => {
+    render(<TransitOptimization />);
+
+    const triggerButton = screen.getByRole('button', { name: /SIMULATE FINAL WHISTLE/i });
+    
+    // Fire double click rapidly
+    fireEvent.click(triggerButton);
+    fireEvent.click(triggerButton);
+
+    expect(mockSimulateFinalWhistle).toHaveBeenCalledTimes(1);
+  });
+
   test('should display loading skeleton when AI recommendations are loading', () => {
     (useStadium as jest.Mock).mockReturnValue({
       transitModes: mockTransitModes,
@@ -121,5 +133,18 @@ describe('TransitOptimization Component', () => {
     expect(screen.getAllByText('East Concourse Shuttle Bus')[0]).toBeInTheDocument();
     expect(screen.getByText('Shuttle bus loading time is acceptable.')).toBeInTheDocument();
     expect(screen.getByText('Egress Gate B.')).toBeInTheDocument();
+  });
+
+  test('should display fallback empty state when transit recommendations API fails or returns empty list', () => {
+    (useStadium as jest.Mock).mockReturnValue({
+      transitModes: mockTransitModes,
+      finalWhistleTriggered: true,
+      transitRecommendations: [],
+      transitRecommendationsLoading: false,
+      simulateFinalWhistle: mockSimulateFinalWhistle
+    });
+
+    render(<TransitOptimization />);
+    expect(screen.getByText(/NO ACTIVE TRANSIT RECOMMENDATIONS/i)).toBeInTheDocument();
   });
 });

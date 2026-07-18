@@ -79,7 +79,7 @@ export const TransitOptimization: React.FC = () => {
         <button
           onClick={handleWhistleClick}
           disabled={localLoading || transitRecommendationsLoading}
-          className={`px-4 py-1.5 rounded font-scoreboard text-[10px] tracking-wider font-bold transition-all flex items-center space-x-1.5 cursor-pointer focus:outline-none focus:ring-1 focus:ring-accent-gold focus:border-accent-gold border ${
+          className={`px-4 py-1.5 rounded font-scoreboard text-[10px] tracking-wider font-bold transition-all flex items-center space-x-1.5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent-gold focus:border-accent-gold border ${
             finalWhistleTriggered
               ? 'bg-red-500/10 text-red-400 border-red-500/30'
               : 'bg-accent-gold hover:bg-accent-gold-hover text-stadium-green-dark border-accent-gold glow-gold'
